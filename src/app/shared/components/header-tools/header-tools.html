@@ -1,0 +1,13 @@
+<button type="button" class="hd-icon-btn relative" aria-label="Notifications">
+  <i class="hgi-stroke hgi-notification-03 text-lg leading-none"></i>
+  @if (hasUnread()) {
+    <span class="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-[#ef4444] ring-2 ring-white"></span>
+  }
+</button>
+<div class="flex items-center gap-2">
+  <span class="w-9 h-9 rounded-full bg-[#00c066] text-white flex items-center justify-center text-xs font-semibold shrink-0">SK</span>
+  <span class="hidden xl:flex flex-col leading-tight">
+        <span class="text-[13px] font-semibold text-gray-900">Somchai K.</span>
+        <span class="text-[11px] text-gray-500">Manager</span>
+      </span>
+</div>

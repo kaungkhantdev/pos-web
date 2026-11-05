@@ -1,0 +1,30 @@
+@if (open()) {
+  <div class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-black/40" (click)="close()"></div>
+    <div class="relative z-10 min-h-full flex items-center justify-center p-4">
+      <div class="bg-white rounded-xl w-full {{ widths[size()] }}" role="dialog" aria-modal="true"
+           [attr.aria-label]="title() || null">
+        @if (title()) {
+          <div class="flex items-center justify-between p-5 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+              @if (icon()) {
+                <span class="w-10 h-10 rounded-xl bg-[#00c066]/10 text-[#00994f] flex items-center justify-center">
+                      <i class="hgi-stroke {{ icon() }} text-lg" aria-hidden="true"></i>
+                    </span>
+              }
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">{{ title() }}</h3>
+                @if (subtitle()) { <p class="text-xs text-gray-400">{{ subtitle() }}</p> }
+              </div>
+            </div>
+            <button type="button" (click)="close()" aria-label="Close"
+                    class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400">
+              <i class="hgi-stroke hgi-cancel-01" aria-hidden="true"></i>
+            </button>
+          </div>
+        }
+        <ng-content />
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,338 @@
+/* Auth pages: login, forgot / reset password, PIN sign-in */
+
+/* ---------- Text fields ---------- */
+
+.auth-field {
+  position: relative;
+}
+
+.auth-field-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 42px;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.auth-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 16px 0 42px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  color: #111827;
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+
+.auth-input.has-toggle {
+  padding-right: 48px;
+}
+
+.auth-input::placeholder {
+  color: #9ca3af;
+}
+
+.auth-input:focus {
+  outline: none;
+  background: #fff;
+  border-color: #00c066;
+  box-shadow: 0 0 0 4px rgba(0, 192, 102, 0.15);
+}
+
+.auth-input[aria-invalid="true"] {
+  border-color: #dc2626;
+  background: #fff;
+}
+
+.auth-field-toggle {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  height: 34px;
+  width: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.auth-field-toggle:hover {
+  color: #4b5563;
+  background: #f3f4f6;
+}
+
+.auth-field-toggle:focus-visible,
+.auth-link:focus-visible,
+.auth-btn:focus-visible,
+.pin-key:focus-visible,
+.staff-chip:focus-visible,
+.auth-check:focus-visible {
+  outline: 2px solid #00c066;
+  outline-offset: 2px;
+}
+
+/* Inline messages under a field */
+.auth-error {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.auth-error.is-visible {
+  display: flex;
+}
+
+.auth-hint {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #b45309;
+}
+
+.auth-hint.is-visible {
+  display: flex;
+}
+
+/* Form-level alert (e.g. wrong credentials) */
+.auth-alert {
+  display: none;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.auth-alert.is-visible {
+  display: flex;
+}
+
+/* ---------- Buttons & links ---------- */
+
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.auth-btn-primary {
+  background: var(--lime);
+  color: #fff;
+}
+
+.auth-btn-primary:hover {
+  background: var(--lime-hover);
+}
+
+.auth-btn-outline {
+  background: #fff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.auth-btn-outline:hover {
+  background: #f9fafb;
+}
+
+.auth-btn[disabled] {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.auth-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: auth-spin 0.7s linear infinite;
+}
+
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+.auth-link {
+  color: #00c066;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.auth-link:hover {
+  color: #007a3f;
+}
+
+.auth-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  accent-color: var(--ink);
+}
+
+/* ---------- Password strength ---------- */
+
+.strength-bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.strength-bars span {
+  height: 4px;
+  border-radius: 9999px;
+  background: #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.strength-bars[data-level="1"] span:nth-child(-n+1) { background: #dc2626; }
+.strength-bars[data-level="2"] span:nth-child(-n+2) { background: #f59e0b; }
+.strength-bars[data-level="3"] span:nth-child(-n+3) { background: #84cc16; }
+.strength-bars[data-level="4"] span:nth-child(-n+4) { background: #22c55e; }
+
+.req-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  transition: color 0.15s;
+}
+
+.req-list li i {
+  color: #d1d5db;
+  transition: color 0.15s;
+}
+
+.req-list li.is-met {
+  color: #15803d;
+}
+
+.req-list li.is-met i {
+  color: #22c55e;
+}
+
+/* ---------- PIN sign-in ---------- */
+
+.staff-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.staff-chip:hover {
+  background: #f9fafb;
+}
+
+.staff-chip[aria-checked="true"] {
+  border-color: var(--green-ui);
+  background: #f4fce4;
+}
+
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.pin-dots span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.pin-dots span.is-filled {
+  background: var(--green-ui);
+  border-color: var(--green-ui);
+  transform: scale(1.1);
+}
+
+.pin-dots.is-error span {
+  border-color: #dc2626;
+}
+
+.pin-dots.is-shaking {
+  animation: pin-shake 0.4s;
+}
+
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.pin-key {
+  height: 52px;
+  border-radius: 14px;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s, transform 0.1s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pin-key:hover {
+  background: #f3f4f6;
+}
+
+.pin-key:active,
+.pin-key.is-pressed {
+  background: #e9f8c8;
+  transform: scale(0.96);
+}
+
+.pin-key.is-muted {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  background: transparent;
+  border-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin-dots.is-shaking { animation: none; }
+  .auth-spinner { animation-duration: 1.5s; }
+}

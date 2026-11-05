@@ -1,0 +1,40 @@
+<h2 class="text-lg font-semibold text-gray-900">Sales by Category</h2>
+<p class="text-sm text-gray-400 mb-2">Share of total orders</p>
+
+<div class="flex justify-center my-2">
+  <div class="relative">
+    <svg width="184" height="184" viewBox="0 0 160 160" aria-hidden="true">
+      <defs>
+        @for (s of segments(); track s.id) {
+          <linearGradient [attr.id]="s.id" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" [attr.stop-color]="s.from" />
+            <stop offset="1" [attr.stop-color]="s.to" />
+          </linearGradient>
+        }
+      </defs>
+      @for (s of segments(); track s.id) {
+        <path [attr.d]="s.path" [attr.fill]="'url(#' + s.id + ')'" [attr.stroke]="'url(#' + s.id + ')'"
+              stroke-width="10" stroke-linejoin="round" />
+      }
+    </svg>
+    <div class="absolute inset-0 flex flex-col items-center justify-center">
+      <span class="text-[26px] font-medium text-gray-900">{{ total() | number }}</span>
+      <span class="sr-only">total orders</span>
+    </div>
+  </div>
+</div>
+
+<div class="space-y-3 mt-4">
+  @for (s of segments(); track s.id) {
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="w-3 h-3 rounded-full" [style.background]="s.color"></span>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">{{ s.name }}</p>
+          <p class="text-xs text-gray-400">{{ s.orders | number }} orders</p>
+        </div>
+      </div>
+      <span class="text-sm font-semibold text-gray-900">{{ s.percent }}%</span>
+    </div>
+  }
+</div>

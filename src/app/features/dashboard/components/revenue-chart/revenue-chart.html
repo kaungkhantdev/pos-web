@@ -1,0 +1,44 @@
+<div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+  <div>
+    <h2 class="text-lg font-semibold text-gray-900">Revenue Overview</h2>
+    <div class="flex items-center gap-2 mt-2">
+      <span class="text-2xl font-semibold text-gray-900">{{ data().head }}</span>
+      <span class="inline-flex items-center gap-1 text-green-600 text-sm font-semibold">
+            <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 2 L9 8 L1 8 Z" fill="currentColor" /></svg>
+        {{ data().change }}%
+          </span>
+      <span class="text-sm text-gray-400">vs previous period</span>
+    </div>
+  </div>
+  <div class="flex items-center bg-gray-100 rounded-xl p-1 text-sm shrink-0" role="group" aria-label="Range">
+    @for (r of ranges; track r.key) {
+      <button type="button" class="px-3 py-1 rounded-md"
+              [attr.aria-pressed]="range() === r.key"
+              [class]="range() === r.key ? 'bg-white text-gray-900 font-semibold' : 'text-gray-500 font-medium'"
+              (click)="range.set(r.key)">{{ r.label }}</button>
+    }
+  </div>
+</div>
+
+<svg viewBox="0 0 730 265" class="w-full" role="img" aria-label="Revenue chart">
+  <defs>
+    <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00c066" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#00c066" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <g stroke="#f3f4f6" stroke-width="1">
+    @for (y of gridY; track y) { <line x1="60" [attr.y1]="y" x2="715" [attr.y2]="y" /> }
+  </g>
+  <g fill="#9ca3af" font-size="11" text-anchor="end">
+    @for (l of yLabels; track l.y) { <text x="48" [attr.y]="l.y">{{ l.text }}</text> }
+  </g>
+  <g fill="#9ca3af" font-size="11" text-anchor="middle">
+    @for (l of xLabels(); track $index) { <text [attr.x]="l.x" y="245">{{ l.text }}</text> }
+  </g>
+  <path [attr.d]="area()" fill="url(#revFill)" />
+  <path [attr.d]="line()" fill="none" stroke="#00c066" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <circle [attr.cx]="last()[0]" [attr.cy]="last()[1]" r="5" fill="#00c066" stroke="#ffffff" stroke-width="2.5" />
+  <rect [attr.x]="tipX() - 26" [attr.y]="tipY()" width="52" height="26" rx="7" fill="#1b1b1d" />
+  <text [attr.x]="tipX()" [attr.y]="tipY() + 17" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">{{ data().tip }}</text>
+</svg>

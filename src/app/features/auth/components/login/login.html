@@ -1,1 +1,84 @@
-<p>login works!</p>
+<div class="bg-white rounded-2xl p-6 sm:p-8">
+  <div class="text-center mb-8">
+    <h1 class="text-2xl font-semibold text-gray-900 mb-2">Welcome Back</h1>
+    <p class="text-gray-500">Sign in to continue to your dashboard</p>
+  </div>
+
+  <div class="auth-alert mb-5" role="alert" [class.is-visible]="error()">
+    <i class="hgi-stroke hgi-alert-circle text-base leading-none" aria-hidden="true"></i>
+    <span>{{ error() }}</span>
+  </div>
+
+<!--  <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5" novalidate>-->
+  <form class="space-y-5" novalidate>
+
+
+    <div>
+      <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+      <div class="auth-field">
+        <span class="auth-field-icon"><i class="hgi-stroke hgi-user text-xl leading-none" aria-hidden="true"></i></span>
+        <input id="username" formControlName="username" type="text" autocomplete="username"
+               autocapitalize="none" spellcheck="false" placeholder="Enter your username"
+               aria-describedby="username-error" class="auth-input"
+               [attr.aria-invalid]="showError('username')" />
+      </div>
+      <p class="auth-error" id="username-error" role="alert" [class.is-visible]="showError('username')">
+        <i class="hgi-stroke hgi-alert-circle text-base leading-none" aria-hidden="true"></i><span>Username is required.</span>
+      </p>
+    </div>
+
+    <div>
+      <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+      <div class="auth-field">
+        <span class="auth-field-icon"><i class="hgi-stroke hgi-lock-password text-xl leading-none" aria-hidden="true"></i></span>
+        <input id="password" formControlName="password" [type]="showPassword() ? 'text' : 'password'"
+               autocomplete="current-password" placeholder="Enter your password"
+               aria-describedby="password-error password-caps" class="auth-input has-toggle"
+               [attr.aria-invalid]="showError('password')"
+               (keydown)="checkCaps($event)" (keyup)="checkCaps($event)" (blur)="capsLock.set(false)" />
+        <button type="button" class="auth-field-toggle"
+                [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                [attr.aria-pressed]="showPassword()"
+                (click)="showPassword.set(!showPassword())">
+          <i class="hgi-stroke text-xl leading-none" aria-hidden="true"
+             [class.hgi-view]="!showPassword()" [class.hgi-view-off-slash]="showPassword()"></i>
+        </button>
+      </div>
+      <p class="auth-error" id="password-error" role="alert" [class.is-visible]="showError('password')">
+        <i class="hgi-stroke hgi-alert-circle text-base leading-none" aria-hidden="true"></i><span>Password is required.</span>
+      </p>
+      <p class="auth-hint" id="password-caps" [class.is-visible]="capsLock()">
+        <i class="hgi-stroke hgi-alert-circle text-base leading-none" aria-hidden="true"></i><span>Caps Lock is on</span>
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input type="checkbox" formControlName="rememberMe" class="auth-check" />
+        <span class="text-sm text-gray-600">Remember me</span>
+      </label>
+      <a routerLink="../forgot-password" class="auth-link text-sm">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="auth-btn auth-btn-primary" [disabled]="loading()">
+      @if (loading()) {
+        <span class="auth-spinner" aria-hidden="true"></span> Signing in…
+      } @else {
+        <i class="hgi-stroke hgi-login-02 text-lg" aria-hidden="true"></i> Sign In
+      }
+    </button>
+  </form>
+
+  <div class="flex items-center gap-4 my-6" aria-hidden="true">
+    <div class="flex-1 h-px bg-gray-200"></div>
+    <span class="text-xs text-gray-400 uppercase tracking-wider">or</span>
+    <div class="flex-1 h-px bg-gray-200"></div>
+  </div>
+
+  <a routerLink="../pin-login" class="auth-btn auth-btn-outline">
+    <i class="hgi-stroke hgi-grid-view text-lg" aria-hidden="true"></i>
+    Sign in with staff PIN
+  </a>
+</div>
+
+<p class="text-center text-sm text-gray-500 mt-6">New staff member? Ask a manager to create your account.</p>

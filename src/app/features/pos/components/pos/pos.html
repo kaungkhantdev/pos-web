@@ -1,0 +1,403 @@
+<!-- ===== MENU SIDE ===== -->
+<section class="lg:flex-1 lg:overflow-y-auto px-6 pb-6 min-w-0">
+
+  <div class="flex items-center justify-between mb-4 pt-6 page-head">
+    <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Order Line</h1>
+    <app-header-tools />
+  </div>
+
+  <!-- Promo banner -->
+  @if (showBanner()) {
+    <div class="relative rounded-xl bg-white p-2.5 flex items-stretch gap-2 mb-6 shrink-0">
+      <div class="flex items-center gap-4 pl-2 flex-1 min-w-0">
+        <div class="min-w-0">
+          <p class="font-semibold text-gray-900">Don't miss the opportunity to upgrade your Ondo to the latest version</p>
+          <p class="text-sm text-gray-500">Update to the latest version soon to discover the many exciting features we've added!</p>
+        </div>
+      </div>
+      <div class="relative self-stretch shrink-0 w-72 bg-[#1b1b1d] rounded-xl overflow-hidden hidden sm:block">
+        <div class="absolute -bottom-8 left-16 w-28 h-28 bg-[#00c066]/25 blur-2xl rounded-full"></div>
+        <div class="absolute left-6 top-1/2 -translate-y-1/2 rotate-[-12deg]">
+          <div class="w-12 rounded-[10px] bg-neutral-800 p-[3px] border border-white/10">
+            <div class="rounded-[7px] overflow-hidden bg-white">
+              <div class="h-5 bg-[#1b1b1d] flex items-end px-1.5 pb-1"><div class="h-1 w-5 bg-white/90 rounded-full"></div></div>
+              <div class="p-1.5 space-y-1">
+                <div class="h-1 w-full bg-gray-200 rounded-full"></div>
+                <div class="h-1 w-7 bg-gray-200 rounded-full"></div>
+                <div class="h-3 w-full bg-[#00c066]/10 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="absolute right-4 top-1/2 -translate-y-1/2">
+          <button type="button" class="btn bg-white hover:bg-gray-100 border-0 text-gray-900 rounded-lg pl-1.5 pr-4 gap-2 h-9 min-h-0 text-sm font-semibold whitespace-nowrap">
+            <span class="w-6 h-6 rounded-full bg-[#1b1b1d] flex items-center justify-center shrink-0"><i class="hgi-stroke hgi-rocket-01 text-white text-xs leading-none"></i></span>
+            Get Started
+          </button>
+        </div>
+      </div>
+      <button type="button" (click)="showBanner.set(false)" aria-label="Dismiss"
+              class="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-lg bg-[#1b1b1d] text-white flex items-center justify-center ring-2 ring-white hover:bg-black z-20">
+        <i class="hgi-stroke hgi-cancel-01 text-xs leading-none"></i>
+      </button>
+    </div>
+  }
+
+  <!-- Active orders -->
+  <div class="flex gap-4 mb-6 shrink-0 overflow-x-auto scrollbar-hide pb-2">
+    @for (o of activeOrders; track o.id) {
+      <a routerLink="/orders" class="bg-white rounded-2xl p-4 min-w-[280px] flex-shrink-0 hover:bg-[#fafafa] transition-colors">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-gray-900 font-semibold text-sm">#{{ o.id }}</span>
+          <span class="border border-gray-200 text-gray-500 text-xs font-medium px-3 py-1 rounded-full">Table {{ o.table }}</span>
+        </div>
+        <p class="font-semibold text-gray-900 text-lg mb-3">{{ o.customer }}</p>
+        <div class="flex items-center justify-between gap-2 bg-gray-50 rounded-full p-1.5 pr-5">
+          <div class="flex items-center gap-2">
+            <div class="relative w-11 h-11 shrink-0">
+              <svg class="w-11 h-11 -rotate-90" viewBox="0 0 44 44" aria-hidden="true">
+                <circle cx="22" cy="22" r="18" fill="none" stroke="#e6f9ef" stroke-width="3.5" />
+                <circle cx="22" cy="22" r="18" fill="none" stroke="#00c066" stroke-width="3.5" stroke-dasharray="113.1"
+                        [attr.stroke-dashoffset]="113.1 * (1 - o.progress / 100)" stroke-linecap="round" />
+              </svg>
+              <span class="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-[#00994f] tracking-tight">{{ o.progress }}%</span>
+            </div>
+            <span class="text-[#00994f] font-medium text-sm">On Progress</span>
+          </div>
+          <span class="text-gray-400 text-sm flex items-center gap-1">{{ o.items }} items <i class="hgi-stroke hgi-arrow-right-01 text-sm"></i></span>
+        </div>
+      </a>
+    }
+  </div>
+
+  <!-- Menu -->
+  <div>
+    <div class="sticky top-0 z-20 bg-[#f4f5f4] pt-3 -mx-6 px-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h2 class="text-xl font-semibold text-gray-900">Menu</h2>
+        <div class="flex items-center gap-2">
+          <div class="relative w-full sm:max-w-xs">
+            <i class="hgi-stroke hgi-search-01 absolute inset-y-0 left-4 flex items-center leading-none text-gray-400" aria-hidden="true"></i>
+            <input type="search" [(ngModel)]="search" placeholder="Search menu" aria-label="Search menu"
+                   class="w-full h-10 pl-10 pr-4 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+          </div>
+          <button type="button" aria-label="Filters"
+                  class="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:bg-gray-100 shrink-0">
+            <i class="hgi-stroke hgi-filter-horizontal text-lg"></i>
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-2 border-b border-gray-200" role="tablist" aria-label="Menu categories">
+        @for (c of categories; track c) {
+          <button type="button" role="tab" [attr.aria-selected]="category() === c"
+                  class="px-4 py-2 text-sm font-medium border-b-2 whitespace-nowrap"
+                  [class]="category() === c ? 'text-[#00994f] border-[#00c066]' : 'text-gray-400 border-transparent hover:text-gray-600'"
+                  (click)="category.set(c)">{{ c }}</button>
+        }
+      </div>
+    </div>
+
+    <div class="pt-4">
+      <div class="grid grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6 gap-x-4 gap-y-6 pb-4">
+        @for (m of menu(); track m.id) {
+          <button type="button" class="group text-left" (click)="add(m)" [attr.aria-label]="'Add ' + m.name">
+            <div class="rounded-xl overflow-hidden mb-3 bg-gray-100">
+              <img [src]="photo(m.image, 400, 240)" [alt]="m.name" loading="lazy"
+                   class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
+            </div>
+            <div class="flex items-center justify-between">
+              <p class="font-semibold text-gray-900 text-sm">{{ m.name }}</p>
+              <span class="font-semibold text-gray-900 text-base">{{ m.price | baht }}</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-0.5">{{ m.note }}</p>
+          </button>
+        } @empty {
+          <p class="col-span-full py-10 text-center text-sm text-gray-400">No menu items match “{{ search() }}”.</p>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CURRENT ORDER ===== -->
+<aside class="lg:w-96 flex flex-col shrink-0 bg-white rounded-2xl mx-4 mb-4 lg:mx-0 lg:mr-6 lg:mt-4 lg:mb-6 overflow-hidden" aria-label="Current order">
+
+  <div class="px-5 py-4 flex items-center justify-between shrink-0">
+    <h2 class="text-lg font-semibold text-gray-900">Current Order</h2>
+    <button type="button" class="text-xs font-medium text-gray-400 hover:text-red-500 disabled:opacity-40"
+            [disabled]="!cart().length" (click)="clearOrder()">Clear</button>
+  </div>
+
+  <!-- Order info -->
+  <div class="px-5 pb-4 shrink-0">
+    <div class="rounded-xl p-4 bg-[#f4f4f5]">
+      <p class="text-xs text-gray-400">Recipient</p>
+      <p class="font-semibold text-gray-900 mb-3">{{ recipient() }}</p>
+
+      <div class="grid grid-cols-3 gap-1 bg-[#f4f4f5] rounded-xl p-1 mb-3" role="group" aria-label="Order type">
+        @for (t of orderTypes; track t) {
+          <button type="button" class="h-8 rounded-lg text-xs flex items-center justify-center gap-1"
+                  [attr.aria-pressed]="orderType() === t"
+                  [class]="orderType() === t ? 'bg-[#00c066] text-white font-semibold' : 'text-gray-500 font-medium hover:bg-white'"
+                  (click)="orderType.set(t)">{{ t | orderTypeLabel }}</button>
+        }
+      </div>
+
+      <div class="border-t border-gray-100 pt-3 flex gap-10">
+        <div>
+          <p class="text-xs text-gray-400">Transaction ID</p>
+          <p class="font-semibold text-gray-900 text-sm">#{{ orderId() }}</p>
+        </div>
+        @if (orderType() === 'dine_in') {
+          <button type="button" class="text-left" (click)="tableOpen.set(true)">
+            <p class="text-xs text-gray-400">Table Number</p>
+            <p class="font-semibold text-gray-900 text-sm flex items-center gap-1">
+              {{ table() || 'Pick' }} <i class="hgi-stroke hgi-pencil-edit-02 text-xs text-gray-400" aria-hidden="true"></i>
+            </p>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div class="lg:flex-1 lg:overflow-y-auto px-5">
+    <div class="divide-y divide-gray-100">
+      @for (line of cart(); track $index; let i = $index) {
+        <div class="flex items-center gap-3 py-4 first:pt-0">
+          <img [src]="photo(line.item.image, 80, 80)" [alt]="line.item.name" class="w-14 h-14 rounded-xl object-cover shrink-0" />
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-gray-900 text-sm">{{ line.item.name }}</p>
+            <button type="button" class="text-xs text-amber-600 hover:text-amber-700 text-left" (click)="openModifiers(i)">
+              {{ line.modifiers.length ? line.modifiers.join(' · ') : line.item.note }}
+            </button>
+            @if (line.instructions) {
+              <p class="text-xs text-gray-400 truncate">“{{ line.instructions }}”</p>
+            }
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <p class="font-semibold text-gray-900 text-lg">{{ line.item.price * line.qty | baht }}</p>
+            <div class="inline-flex items-center gap-2 rounded-xl bg-[#f4f4f5] p-1">
+              <button type="button" (click)="changeQty(i, -1)" [attr.aria-label]="'One less ' + line.item.name"
+                      class="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-base font-semibold leading-none text-gray-600 hover:bg-gray-100">−</button>
+              <span class="min-w-[20px] text-center text-sm font-semibold">{{ line.qty }}</span>
+              <button type="button" (click)="changeQty(i, 1)" [attr.aria-label]="'One more ' + line.item.name"
+                      class="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00c066] text-base font-semibold leading-none text-white hover:bg-[#00a857]">+</button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="py-10 text-center text-sm text-gray-400">
+          <i class="hgi-stroke hgi-shopping-cart-01 text-2xl block mb-2" aria-hidden="true"></i>
+          Tap a menu item to add it
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="px-5 py-4 shrink-0">
+    <div class="rounded-xl p-4 mb-4 bg-white">
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Item</span><span class="font-medium text-gray-900">{{ itemCount() }} Items</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Sub Total</span><span class="font-medium text-gray-900">{{ subtotal() | baht }}</span></div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Discount</span>
+          <button type="button" class="font-medium text-[#00994f] hover:text-[#007a3f]" (click)="openDiscount()">
+            {{ discount() ? (discount() | baht) : 'Add' }}
+          </button>
+        </div>
+        <div class="flex justify-between"><span class="text-gray-500">Tax ({{ taxPercent }}%)</span><span class="font-medium text-gray-900">{{ tax() | baht }}</span></div>
+        <div class="border-t border-dashed border-gray-300 pt-3 flex justify-between items-center">
+          <span class="text-gray-500">Total</span><span class="font-semibold text-gray-900 text-lg">{{ total() | baht }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-2 mb-3">
+      <button type="button" (click)="sendToKitchen()"
+              class="h-10 rounded-xl bg-[#1b1b1d] hover:bg-black text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+        <i class="hgi-stroke hgi-fire text-base" aria-hidden="true"></i> Send to Kitchen
+      </button>
+      <button type="button" (click)="splitOpen.set(true)" [disabled]="!cart().length"
+              class="h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 flex items-center justify-center gap-2 disabled:opacity-50">
+        <i class="hgi-stroke hgi-arrow-move-down-right text-base" aria-hidden="true"></i> Split
+      </button>
+    </div>
+    <button type="button" (click)="openPayment()"
+            class="btn bg-[#00c066] hover:bg-[#00a857] text-white border-0 w-full rounded-xl h-10 text-sm font-semibold">Process Transactions</button>
+  </div>
+</aside>
+
+<!-- ===================== DISCOUNT ===================== -->
+<app-modal [(open)]="discountOpen" title="Add Discount" size="sm">
+  <div class="px-6 py-5 space-y-4">
+    <div class="flex gap-2">
+      <button type="button" class="flex-1 h-9 rounded-lg text-sm font-medium"
+              [class]="draftDiscountMode() === 'percent' ? segOn : segOff" (click)="draftDiscountMode.set('percent')">Percent %</button>
+      <button type="button" class="flex-1 h-9 rounded-lg text-sm font-medium"
+              [class]="draftDiscountMode() === 'amount' ? segOn : segOff" (click)="draftDiscountMode.set('amount')">Amount ฿</button>
+    </div>
+    <input type="number" min="0" [(ngModel)]="draftDiscountValue" placeholder="0" aria-label="Discount value"
+           class="w-full h-10 px-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+  </div>
+  <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="discountOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+    <button type="button" (click)="applyDiscount()" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold">Apply</button>
+  </div>
+</app-modal>
+
+<!-- ===================== PAYMENT ===================== -->
+<app-modal [(open)]="paymentOpen" title="Payment" icon="hgi-credit-card">
+  <div class="px-6 py-5 space-y-4">
+    <div class="text-center py-2">
+      <p class="text-sm text-gray-500">Amount due</p>
+      <p class="text-3xl font-semibold text-gray-900">{{ total() | baht: 2 }}</p>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <span class="text-sm font-medium text-gray-700">Payment method</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+        <span>Split payment</span>
+        <span class="switch"><input type="checkbox" [(ngModel)]="splitPay" /><span class="slider"></span></span>
+      </label>
+    </div>
+
+    @if (!splitPay()) {
+      <div class="grid grid-cols-3 gap-2">
+        @for (m of payMethods; track m.value) {
+          <button type="button" class="h-16 rounded-xl flex flex-col items-center justify-center gap-1"
+                  [attr.aria-pressed]="payMethod() === m.value"
+                  [class]="payMethod() === m.value ? 'border-2 border-[#00c066] bg-[#00c066]/10 text-[#00994f]' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'"
+                  (click)="payMethod.set(m.value)">
+            <i class="hgi-stroke {{ m.icon }} text-xl" aria-hidden="true"></i>
+            <span class="text-xs font-medium">{{ m.label }}</span>
+          </button>
+        }
+      </div>
+
+      @if (payMethod() === 'cash') {
+        <div class="space-y-4">
+          <div>
+            <label for="cashReceived" class="block text-sm font-medium text-gray-700 mb-2">Cash received</label>
+            <input id="cashReceived" type="number" min="0" [(ngModel)]="cashReceived" placeholder="0.00"
+                   class="w-full h-10 px-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+          </div>
+          <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+            <span class="text-sm text-gray-500">Change</span>
+            <span class="font-semibold text-gray-900">{{ change() | baht: 2 }}</span>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="space-y-3">
+        @for (row of splitRows; track row.label) {
+          <div class="flex items-center gap-2">
+            <span class="w-14 text-sm text-gray-500 flex items-center gap-1"><i class="hgi-stroke {{ row.icon }}" aria-hidden="true"></i></span>
+            <span class="text-sm font-medium text-gray-700 flex-1">{{ row.label }}</span>
+            <input type="number" min="0" step="0.01" [attr.aria-label]="row.label + ' amount'"
+                   [ngModel]="row.amount()" (ngModelChange)="row.amount.set($event ?? 0)"
+                   class="w-28 h-9 px-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm text-right" />
+          </div>
+        }
+        <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+          <span class="text-sm text-gray-500">Remaining</span>
+          <span class="font-semibold" [class]="remaining() === 0 ? 'text-green-600' : 'text-amber-600'">{{ remaining() | baht: 2 }}</span>
+        </div>
+      </div>
+    }
+  </div>
+  <div class="flex gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="paymentOpen.set(false)" class="flex-1 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+    <button type="button" (click)="completePayment()" [disabled]="!canComplete()"
+            class="flex-1 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Complete &amp; Print</button>
+  </div>
+</app-modal>
+
+<!-- ===================== RECEIPT ===================== -->
+<app-modal [(open)]="receiptOpen" (closed)="newOrder()" size="xs">
+  <div class="px-6 py-6 text-center border-b border-dashed border-gray-200">
+    <div class="w-14 h-14 rounded-xl bg-green-50 text-green-500 flex items-center justify-center mx-auto mb-3">
+      <i class="hgi-stroke hgi-checkmark-circle-02 text-2xl" aria-hidden="true"></i>
+    </div>
+    <h3 class="font-semibold text-gray-900">Astronity POS</h3>
+    <p class="text-xs text-gray-400">123 Sukhumvit Rd, Bangkok</p>
+    <p class="text-xs text-gray-400 mt-1">#{{ orderId() }} · {{ paidAt() | date: 'dd MMM yyyy HH:mm' }}</p>
+  </div>
+  <div class="px-6 py-4 text-sm space-y-2">
+    @for (line of cart(); track $index) {
+      <div class="flex justify-between text-gray-600"><span>{{ line.item.name }} ×{{ line.qty }}</span><span>{{ line.item.price * line.qty | baht }}</span></div>
+    }
+    @if (discount()) {
+      <div class="flex justify-between text-gray-600 pt-2 border-t border-dashed border-gray-200"><span>Discount</span><span>−{{ discount() | baht }}</span></div>
+    }
+    <div class="flex justify-between text-gray-600 pt-2 border-t border-dashed border-gray-200"><span>Tax ({{ taxPercent }}%)</span><span>{{ tax() | baht: 2 }}</span></div>
+    <div class="flex justify-between font-semibold text-gray-900 pt-2 border-t border-dashed border-gray-200"><span>Total</span><span>{{ total() | baht: 2 }}</span></div>
+  </div>
+  <div class="flex gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="newOrder()" class="flex-1 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Close</button>
+    <button type="button" (click)="print()" class="flex-1 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold flex items-center justify-center gap-2">
+      <i class="hgi-stroke hgi-printer text-base" aria-hidden="true"></i> Print
+    </button>
+  </div>
+</app-modal>
+
+<!-- ===================== MODIFIERS ===================== -->
+<app-modal [(open)]="modifierOpen" title="Modifiers" [subtitle]="editingName()">
+  <div class="px-6 py-5 space-y-4">
+    <div>
+      <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Common</p>
+      <div class="flex flex-wrap gap-2">
+        @for (m of modifierOptions; track m) {
+          <button type="button" class="mod-chip px-3 h-9 rounded-lg border border-gray-200 text-sm text-gray-600 hover:border-[#00c066]"
+                  [class.mod-on]="draftMods().includes(m)" [attr.aria-pressed]="draftMods().includes(m)"
+                  (click)="toggleMod(m)">{{ m }}</button>
+        }
+      </div>
+    </div>
+    <div>
+      <label for="modNote" class="block text-sm font-medium text-gray-700 mb-2">Special instructions</label>
+      <textarea id="modNote" rows="2" [(ngModel)]="draftNote" placeholder="e.g. allergy note for the kitchen"
+                class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm"></textarea>
+    </div>
+  </div>
+  <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="modifierOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+    <button type="button" (click)="saveModifiers()" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold">Save</button>
+  </div>
+</app-modal>
+
+<!-- ===================== TABLE PICK ===================== -->
+<app-modal [(open)]="tableOpen" title="Select Table">
+  <div class="px-6 py-5">
+    <div class="grid grid-cols-4 gap-2">
+      @for (t of freeTables; track t) {
+        <button type="button" class="h-14 rounded-xl border text-sm font-semibold"
+                [class]="table() === t ? 'border-[#00c066] bg-[#00c066]/10 text-[#00994f]' : 'border-gray-200 text-gray-700 hover:border-[#00c066]'"
+                (click)="pickTable(t)">{{ t }}</button>
+      }
+    </div>
+  </div>
+</app-modal>
+
+<!-- ===================== SPLIT BILL ===================== -->
+<app-modal [(open)]="splitOpen" title="Split Bill" size="sm">
+  <div class="px-6 py-5 space-y-4">
+    <div class="flex gap-2">
+      <button type="button" class="flex-1 h-9 rounded-lg text-sm font-medium" [class]="splitMode() === 'even' ? segOn : segOff" (click)="splitMode.set('even')">Split evenly</button>
+      <button type="button" class="flex-1 h-9 rounded-lg text-sm font-medium" [class]="splitMode() === 'item' ? segOn : segOff" (click)="splitMode.set('item')">By item</button>
+    </div>
+    <div>
+      <label for="guests" class="block text-sm font-medium text-gray-700 mb-2">Number of guests</label>
+      <input id="guests" type="number" min="1" [(ngModel)]="guests"
+             class="w-full h-10 px-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+    </div>
+    <div class="bg-gray-50 rounded-xl divide-y divide-gray-100">
+      <div class="flex items-center justify-between px-4 py-3 text-sm"><span class="text-gray-500">Total</span><span class="font-semibold text-gray-900">{{ total() | baht: 2 }}</span></div>
+      <div class="flex items-center justify-between px-4 py-3 text-sm"><span class="text-gray-500">Per guest</span><span class="font-semibold text-[#00994f]">{{ perGuest() | baht: 2 }}</span></div>
+    </div>
+  </div>
+  <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="splitOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+    <button type="button" (click)="printSplit()" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold">Print Split Bills</button>
+  </div>
+</app-modal>

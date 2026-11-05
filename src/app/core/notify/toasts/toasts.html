@@ -1,0 +1,29 @@
+@for (t of toast.toasts(); track t.id) {
+  <div
+    class="app-toast app-toast-{{ t.type }}"
+    [class.app-toast-out]="t.leaving"
+    [attr.role]="t.type === 'error' ? 'alert' : 'status'"
+    (mouseenter)="toast.pause(t.id)"
+    (mouseleave)="toast.resume(t.id)"
+  >
+        <span class="app-toast-icon"
+        ><i class="hgi-stroke {{ icons[t.type] }}" aria-hidden="true"></i
+        ></span>
+    <div class="app-toast-body">
+      @if (t.title) {
+        <p class="app-toast-title">{{ t.title }}</p>
+      }
+      @if (t.message) {
+        <p class="app-toast-msg">{{ t.message }}</p>
+      }
+    </div>
+    <button
+      type="button"
+      class="app-toast-close"
+      aria-label="Dismiss"
+      (click)="toast.close(t.id)"
+    >
+      <i class="hgi-stroke hgi-cancel-01" aria-hidden="true"></i>
+    </button>
+  </div>
+}

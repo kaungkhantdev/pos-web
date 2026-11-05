@@ -1,0 +1,65 @@
+<!-- Phones only -->
+<header class="app-mobilebar">
+  <button #toggle type="button" class="hd-icon-btn" aria-label="Open menu"
+          aria-controls="sidebar" [attr.aria-expanded]="menuOpen()" (click)="setMenu(!menuOpen())">
+    <i class="hgi-stroke hgi-menu-01 text-xl leading-none"></i>
+  </button>
+  <a routerLink="/dashboard" class="flex items-center gap-2" aria-label="Astronity home">
+    <span class="w-8 h-8 rounded-full border-[1.5px] border-gray-200 bg-white flex items-center justify-center shrink-0">
+      <app-logo [width]="18" />
+    </span>
+    <span class="text-base font-semibold text-gray-900">Astronity</span>
+  </a>
+  <span class="w-9 h-9 rounded-full bg-[#00c066] text-white flex items-center justify-center text-sm font-semibold">SK</span>
+</header>
+
+<div class="app-body">
+  <aside #rail id="sidebar" class="app-rail" [class.open]="menuOpen()" aria-label="Main">
+    <a routerLink="/dashboard" class="rail-logo" aria-label="Astronity home">
+      <span class="w-10 h-10 rounded-full border-[1.5px] border-gray-200 bg-white flex items-center justify-center shrink-0">
+        <app-logo [width]="22" />
+      </span>
+    </a>
+
+    <nav class="rail-group">
+      @for (item of nav; track item.link) {
+        <ng-container [ngTemplateOutlet]="navLink" [ngTemplateOutletContext]="{ $implicit: item }" />
+      }
+    </nav>
+
+    <div class="rail-group rail-bottom">
+      @for (item of bottomNav; track item.link) {
+        <ng-container [ngTemplateOutlet]="navLink" [ngTemplateOutletContext]="{ $implicit: item }" />
+      }
+      <button type="button" class="sb-item" data-tip="Logout" (click)="logout()">
+        <span class="sb-icon"><i class="hgi-stroke hgi-logout-02 text-[18px] leading-none"></i></span>
+        <span class="sb-label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <main [class]="fullHeight()
+      ? 'flex-1 flex flex-col min-w-0 overflow-hidden'
+      : 'flex-1 min-w-0 overflow-y-auto'">
+    <router-outlet />
+  </main>
+</div>
+
+<div id="sbBackdrop" [class.show]="menuOpen()" (click)="setMenu(false)"></div>
+
+<ng-template #navLink let-item>
+  <a [routerLink]="item.link" routerLinkActive="active" ariaCurrentWhenActive="page"
+     class="sb-item" [attr.data-tip]="item.label">
+    <span class="sb-icon">
+      @if (item.icon) {
+        <i class="hgi-stroke {{ item.icon }} text-[18px] leading-none"></i>
+      } @else {
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          @for (d of item.svg; track d) { <path [attr.d]="d" /> }
+        </svg>
+      }
+    </span>
+    <span class="sb-label">{{ item.label }}</span>
+  </a>
+</ng-template>

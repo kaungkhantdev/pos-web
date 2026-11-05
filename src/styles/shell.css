@@ -1,0 +1,237 @@
+/* App shell: full-height icon sidebar + page header tools */
+
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--app-bg);
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Sidebar ---------- */
+
+.app-rail {
+  width: 68px;
+  flex-shrink: 0;
+  /* logo top, nav centred vertically, settings / logout at the bottom */
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  gap: 4px;
+  padding: 14px 0;
+  background: #fff;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.app-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rail-logo {
+  display: flex;
+  margin-bottom: 0;
+  border-radius: 9999px;
+}
+
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  align-self: center;
+}
+
+.rail-bottom {
+  align-self: end;
+  padding-top: 12px;
+}
+
+.sb-item {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.sb-item:hover {
+  background: var(--app-soft);
+  color: #111827;
+}
+
+.sb-item.active {
+  background: var(--green-ui);
+  color: #fff;
+}
+
+.sb-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sb-label {
+  display: none;
+}
+
+/* Tooltip: fixed so the scrolling sidebar doesn't clip it; it keeps its
+   vertical static position (centred on the icon) and sits right of the bar. */
+.sb-item::after {
+  content: attr(data-tip);
+  position: fixed;
+  left: 76px;
+  transform: translateX(-4px);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 80;
+}
+
+.sb-item:hover::after,
+.sb-item:focus-visible::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ---------- Page header tools (bell + profile) ---------- */
+
+.page-head {
+  flex-wrap: wrap;
+}
+
+.page-head > :first-child {
+  margin-right: auto;
+}
+
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hd-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #374151;
+  transition: background-color 0.15s;
+}
+
+.hd-icon-btn:hover {
+  background: var(--app-soft);
+}
+
+.sb-item:focus-visible,
+.hd-icon-btn:focus-visible,
+.rail-logo:focus-visible {
+  outline: 2px solid var(--green-ui);
+  outline-offset: 2px;
+}
+
+/* ---------- Phones: menu bar + slide-in drawer ---------- */
+
+.app-mobilebar {
+  display: none;
+}
+
+#sbBackdrop {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .app-mobilebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff;
+    border-bottom: 1px solid #eceeed;
+    flex-shrink: 0;
+  }
+  .header-tools {
+    display: none;
+  }
+  .app-rail {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 248px;
+    align-items: stretch;
+    padding: 16px;
+    z-index: 70;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .app-rail.open {
+    transform: translateX(0);
+  }
+  .rail-logo {
+    padding-left: 4px;
+    margin-bottom: 12px;
+  }
+  .rail-bottom {
+    margin-top: auto;
+  }
+  .rail-group,
+  .rail-bottom {
+    align-self: stretch;
+    align-items: stretch;
+  }
+  .sb-item {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 16px;
+    border-radius: 9999px;
+  }
+  .sb-item::after {
+    display: none;
+  }
+  .sb-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  #sbBackdrop.show {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    background: rgba(0, 0, 0, 0.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-rail {
+    transition: none;
+  }
+}

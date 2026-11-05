@@ -1,0 +1,370 @@
+/* Design tokens: green accent on a light canvas */
+:root {
+  --green-ui: #00c066;
+  --green-ui-hover: #00a857;
+  --lime: #00c066;
+  --lime-hover: #00a857;
+  --green: #00994f;
+  --green-dark: #007a3f;
+  --ink: #1b1b1d;
+  --app-bg: #f4f5f4;
+  --app-soft: #f4f4f5;
+}
+
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  color: #111827;
+}
+
+h1 {
+  letter-spacing: -0.02em;
+}
+
+/* Tables: soft grey header row, sentence-case labels (as in the reference) */
+table thead tr {
+  background: #f7f7f8;
+}
+
+table thead th {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #6b7280 !important;
+}
+
+button,
+input,
+textarea,
+select,
+.btn {
+  font-family: inherit;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Toggle switch */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  inset: 0;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.switch .slider::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.switch input:checked + .slider {
+  background: var(--green-ui);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* Light green chart bar (the highlighted bar uses the solid accent) */
+.bar-hatch {
+  background-color: #b3eed0;
+}
+
+/* Reports: report-type menu (vertical list on desktop, chip row on phones) */
+.report-nav {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.report-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.report-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4b5563;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.report-nav-item i {
+  color: #9ca3af;
+}
+
+.report-nav-item:hover {
+  background: var(--app-soft);
+  color: #111827;
+}
+
+.report-nav-item.active {
+  background: var(--green-ui);
+  color: #fff;
+}
+
+.report-nav-item.active i {
+  color: #fff;
+}
+
+.report-nav-item:focus-visible {
+  outline: 2px solid var(--green-ui);
+  outline-offset: 2px;
+}
+
+@media (min-width: 1024px) {
+  .report-nav {
+    flex-direction: column;
+    overflow: visible;
+  }
+}
+
+/* ---------- Toasts (js/notify.js) ---------- */
+
+.app-toast-stack {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(380px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.app-toast {
+  --tone: #00c066;
+  --tone-ink: #00994f;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 44px 14px 14px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--tone) 22%, #e5e7eb);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--tone) 12%, #fff) 0%, #fff 55%);
+  pointer-events: auto;
+  animation: app-toast-in 0.22s ease-out;
+}
+
+.app-toast-success { --tone: #00c066; --tone-ink: #00994f; }
+.app-toast-error   { --tone: #ef4444; --tone-ink: #dc2626; }
+.app-toast-warning { --tone: #f59e0b; --tone-ink: #d97706; }
+.app-toast-info    { --tone: #3b82f6; --tone-ink: #2563eb; }
+
+.app-toast-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--tone) 25%, #fff);
+  color: var(--tone-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.app-toast-body {
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.app-toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.app-toast-msg {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.app-toast-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.app-toast-close:hover {
+  background: rgba(17, 24, 39, 0.05);
+  color: #374151;
+}
+
+.app-toast-out {
+  opacity: 0;
+  transform: translateX(12px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+@keyframes app-toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Confirm box (js/notify.js + delete modals) ---------- */
+
+.cf-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cf-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.cf-box {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+  animation: cf-in 0.18s ease-out;
+}
+
+.cf-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.cf-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cf-danger  { color: #dc2626; }
+.cf-warning { color: #d97706; }
+.cf-info    { color: #2563eb; }
+.cf-success { color: #00994f; }
+
+.cf-msg {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #4b5563;
+}
+
+.cf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.cf-btn {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  transition: background-color 0.15s;
+}
+
+.cf-btn i { font-size: 16px; }
+
+.cf-btn-soft { background: var(--app-soft); color: #374151; font-weight: 500; }
+.cf-btn-soft:hover { background: #e9eaec; }
+.cf-btn-danger { background: #ef4444; }
+.cf-btn-danger:hover { background: #dc2626; }
+.cf-btn-warning { background: #f59e0b; }
+.cf-btn-warning:hover { background: #d97706; }
+.cf-btn-primary { background: var(--green-ui); }
+.cf-btn-primary:hover { background: var(--green-ui-hover); }
+
+.cf-btn:focus-visible,
+.app-toast-close:focus-visible {
+  outline: 2px solid var(--green-ui);
+  outline-offset: 2px;
+}
+
+@keyframes cf-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 767px) {
+  .app-toast-stack {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-toast, .cf-box { animation: none; }
+}
