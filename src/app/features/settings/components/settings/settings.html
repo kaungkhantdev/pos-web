@@ -1,0 +1,219 @@
+<div class="p-6 max-w-[1000px] mx-auto">
+
+  <!-- Header -->
+  <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-head">
+    <div>
+      <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Settings</h1>
+      <p class="text-[15px] text-gray-500 mt-1">Configure your shop, taxes, receipts and payments.</p>
+    </div>
+    <app-header-tools />
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate class="space-y-6">
+
+    <!-- ===== Shop details ===== -->
+    <section class="bg-white rounded-2xl overflow-hidden" formGroupName="shop">
+      <ng-container *ngTemplateOutlet="head; context: { icon: 'hgi-store-01', title: 'Shop Details' }" />
+      @let shop = form.controls.shop.controls;
+      <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label for="sName" class="block text-sm font-medium text-gray-700 mb-2">Shop Name</label>
+          <input id="sName" type="text" formControlName="name" maxlength="60" [class]="field(shop.name)" [attr.aria-invalid]="invalid(shop.name)" />
+          @if (invalid(shop.name)) { <p class="text-xs text-red-600 mt-1.5">Enter the shop name.</p> }
+        </div>
+        <div class="sm:col-span-2">
+          <label for="sAddress" class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <textarea id="sAddress" formControlName="address" rows="2" maxlength="160"
+                    class="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-[#00c066] text-sm transition-colors resize-none"></textarea>
+        </div>
+        <div>
+          <label for="sPhone" class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+          <input id="sPhone" type="tel" formControlName="phone" placeholder="02-123-4567" [class]="field(shop.phone)" [attr.aria-invalid]="invalid(shop.phone)" />
+          @if (invalid(shop.phone)) { <p class="text-xs text-red-600 mt-1.5">Use a Thai number like 02-123-4567.</p> }
+        </div>
+        <div>
+          <label for="sCurrency" class="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+          <select id="sCurrency" formControlName="currency" [class]="field(shop.currency)">
+            @for (c of currencies; track c.value) { <option [ngValue]="c.value">{{ c.label }}</option> }
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Tax ===== -->
+    <section class="bg-white rounded-2xl overflow-hidden" formGroupName="tax">
+      <ng-container *ngTemplateOutlet="head; context: { icon: 'hgi-percent-circle', title: 'Tax Configuration' }" />
+      @let tax = form.controls.tax.controls;
+      <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="tRate" class="block text-sm font-medium text-gray-700 mb-2">Tax Rate (%)</label>
+          <input id="tRate" type="number" formControlName="rate" step="0.01" min="0" max="30" [class]="field(tax.rate)" [attr.aria-invalid]="invalid(tax.rate)" />
+          @if (invalid(tax.rate)) { <p class="text-xs text-red-600 mt-1.5">Enter a rate from 0 to 30.</p> }
+        </div>
+        <div>
+          <label for="tId" class="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+          <input id="tId" type="text" inputmode="numeric" formControlName="taxId" maxlength="13" [class]="field(tax.taxId)" [attr.aria-invalid]="invalid(tax.taxId)" />
+          @if (invalid(tax.taxId)) { <p class="text-xs text-red-600 mt-1.5">A Thai tax ID has 13 digits.</p> }
+        </div>
+        <div class="sm:col-span-2 flex items-center justify-between pt-1">
+          <div>
+            <p class="text-sm font-medium text-gray-700">Prices include tax</p>
+            <p class="text-xs text-gray-400">Show tax-inclusive prices on the POS</p>
+          </div>
+          <label class="switch"><input type="checkbox" formControlName="inclusive" aria-label="Prices include tax" /><span class="slider"></span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Receipt + live preview ===== -->
+    <section class="bg-white rounded-2xl overflow-hidden" formGroupName="receipt">
+      <ng-container *ngTemplateOutlet="head; context: { icon: 'hgi-invoice-03', title: 'Receipt' }" />
+      @let rc = form.controls.receipt.controls;
+      @let p = preview();
+      <div class="p-6 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6">
+        <div class="space-y-4">
+          <div>
+            <label for="rHeader" class="block text-sm font-medium text-gray-700 mb-2">Header Text</label>
+            <input id="rHeader" type="text" formControlName="header" maxlength="48" [class]="field(rc.header)" />
+            <p class="text-xs mt-1.5" [class]="rc.header.value.length > p.chars ? 'text-amber-600' : 'text-gray-400'">
+              {{ rc.header.value.length }}/{{ p.chars }} characters fit on one line at {{ p.v.printer.paper }}
+            </p>
+          </div>
+          <div>
+            <label for="rFooter" class="block text-sm font-medium text-gray-700 mb-2">Footer Text</label>
+            <input id="rFooter" type="text" formControlName="footer" maxlength="48" [class]="field(rc.footer)" />
+            <p class="text-xs mt-1.5" [class]="rc.footer.value.length > p.chars ? 'text-amber-600' : 'text-gray-400'">
+              {{ rc.footer.value.length }}/{{ p.chars }} characters fit on one line
+            </p>
+          </div>
+        </div>
+
+        <!-- preview -->
+        <div class="flex flex-col items-center">
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2 self-start md:self-center">Preview</p>
+          <div class="bg-[#fafafa] border border-gray-200 rounded-lg px-4 py-5 font-mono text-[11px] leading-relaxed text-gray-700 shadow-sm {{ p.width }}"
+               aria-label="Receipt preview">
+            <p class="text-center font-bold text-[13px] break-words">{{ p.v.receipt.header || p.v.shop.name }}</p>
+            @if (p.v.shop.address) { <p class="text-center break-words">{{ p.v.shop.address }}</p> }
+            @if (p.v.shop.phone) { <p class="text-center">Tel {{ p.v.shop.phone }}</p> }
+            @if (p.v.tax.taxId) { <p class="text-center">Tax ID {{ p.v.tax.taxId }}</p> }
+            <p class="border-t border-dashed border-gray-300 my-2"></p>
+            @for (l of p.lines; track l.name) {
+              <p class="flex justify-between gap-2"><span>{{ l.qty }}× {{ l.name }}</span><span>{{ p.symbol }}{{ l.price * l.qty | number: '1.2-2' }}</span></p>
+            }
+            <p class="border-t border-dashed border-gray-300 my-2"></p>
+            <p class="flex justify-between"><span>Subtotal</span><span>{{ p.symbol }}{{ p.subtotal | number: '1.2-2' }}</span></p>
+            <p class="flex justify-between">
+              <span>VAT {{ p.rate }}%{{ p.v.tax.inclusive ? ' (incl.)' : '' }}</span><span>{{ p.symbol }}{{ p.tax | number: '1.2-2' }}</span>
+            </p>
+            <p class="flex justify-between font-bold text-[12px] mt-1"><span>TOTAL</span><span>{{ p.symbol }}{{ p.total | number: '1.2-2' }}</span></p>
+            <p class="border-t border-dashed border-gray-300 my-2"></p>
+            @if (p.v.receipt.footer) { <p class="text-center break-words">{{ p.v.receipt.footer }}</p> }
+          </div>
+          <p class="text-[11px] text-gray-400 mt-2">{{ p.v.printer.paper }} paper · {{ p.v.printer.copies || 1 }} {{ p.v.printer.copies === 1 ? 'copy' : 'copies' }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Payment methods ===== -->
+    <section class="bg-white rounded-2xl overflow-hidden" formGroupName="payments">
+      <ng-container *ngTemplateOutlet="head; context: { icon: 'hgi-credit-card', title: 'Payment Methods' }" />
+      <div class="p-6 divide-y divide-gray-100">
+        @for (m of paymentOptions; track m.key) {
+          <div class="flex items-center justify-between py-3">
+            <div class="flex items-center gap-3">
+              <i class="hgi-stroke {{ m.icon }} text-gray-500" aria-hidden="true"></i>
+              <span class="text-sm font-medium text-gray-700">{{ m.label }}</span>
+            </div>
+            <label class="switch"><input type="checkbox" [formControlName]="m.key" [attr.aria-label]="m.label" /><span class="slider"></span></label>
+          </div>
+        }
+        @if (form.controls.payments.hasError('noneSelected')) {
+          <p class="pt-3 text-xs text-red-600 flex items-center gap-1.5">
+            <i class="hgi-stroke hgi-alert-02" aria-hidden="true"></i> Keep at least one payment method on, or the POS can't take payments.
+          </p>
+        }
+      </div>
+    </section>
+
+    <!-- ===== Printer ===== -->
+    <section class="bg-white rounded-2xl overflow-hidden" formGroupName="printer">
+      <ng-container *ngTemplateOutlet="head; context: { icon: 'hgi-printer', title: 'Printer Settings' }" />
+      @let pr = form.controls.printer.controls;
+      <div class="p-6 space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="pReceipt" class="block text-sm font-medium text-gray-700 mb-2">Receipt Printer</label>
+            <select id="pReceipt" formControlName="receipt" [class]="field(pr.receipt)">
+              @for (o of receiptPrinters; track o.id) { <option [ngValue]="o.id">{{ o.label }}</option> }
+            </select>
+          </div>
+          <div>
+            <label for="pKitchen" class="block text-sm font-medium text-gray-700 mb-2">Kitchen Printer</label>
+            <select id="pKitchen" formControlName="kitchen" [class]="field(pr.kitchen)">
+              @for (o of kitchenPrinters; track o.id) { <option [ngValue]="o.id">{{ o.label }}</option> }
+            </select>
+          </div>
+          <div>
+            <label for="pPaper" class="block text-sm font-medium text-gray-700 mb-2">Paper Size</label>
+            <select id="pPaper" formControlName="paper" [class]="field(pr.paper)">
+              @for (o of paperSizes; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+            </select>
+          </div>
+          <div>
+            <label for="pCopies" class="block text-sm font-medium text-gray-700 mb-2">Copies per Receipt</label>
+            <input id="pCopies" type="number" formControlName="copies" min="1" max="5" [class]="field(pr.copies)" [attr.aria-invalid]="invalid(pr.copies)" />
+            @if (invalid(pr.copies)) { <p class="text-xs text-red-600 mt-1.5">1 to 5 copies.</p> }
+          </div>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+          @for (t of printToggles; track t.key) {
+            @let off = form.controls.printer.get(t.key)?.disabled;
+            <div class="flex items-center justify-between py-3" [class.opacity-50]="off">
+              <div class="flex items-center gap-3">
+                <i class="hgi-stroke {{ t.icon }} text-gray-500" aria-hidden="true"></i>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">{{ t.label }}</p>
+                  <p class="text-xs text-gray-400">{{ off ? 'Pick a kitchen printer to use this' : t.hint }}</p>
+                </div>
+              </div>
+              <label class="switch"><input type="checkbox" [formControlName]="t.key" [attr.aria-label]="t.label" /><span class="slider"></span></label>
+            </div>
+          }
+        </div>
+
+        <button type="button" (click)="testPrint()"
+                class="inline-flex items-center gap-2 h-9 px-4 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">
+          <i class="hgi-stroke hgi-printer text-base" aria-hidden="true"></i> Print test page
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== Save bar (sticks to the bottom while scrolling) ===== -->
+    <div class="sticky bottom-0 -mx-6 px-6 py-4 bg-[#f4f5f4]/90 backdrop-blur flex items-center justify-end gap-3">
+      @if (dirty()) {
+        <span class="mr-auto text-sm text-amber-600 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span> Unsaved changes
+        </span>
+      }
+      <button type="button" (click)="revert()" [disabled]="!dirty() || saving()"
+              class="px-4 h-10 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Reset</button>
+      <button type="submit" [disabled]="!dirty() || saving()"
+              class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">
+        @if (saving()) { <span class="auth-spinner" aria-hidden="true"></span> }
+        Save Settings
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- section header -->
+<ng-template #head let-icon="icon" let-title="title">
+  <div class="flex items-center gap-3 p-5">
+    <span class="w-8 h-8 rounded-xl bg-[#00c066]/10 text-[#00994f] flex items-center justify-center">
+      <i class="hgi-stroke {{ icon }}" aria-hidden="true"></i>
+    </span>
+    <h2 class="font-semibold text-gray-900">{{ title }}</h2>
+  </div>
+</ng-template>

@@ -1,5 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
+@layer theme, base, components, utilities;
+@import url('https://cdn.hugeicons.com/font/hgi-stroke-rounded.css') layer(base);
 @import 'tailwindcss';
 
 @import './styles/app.css';    /* tokens, base, tables, .switch, report nav, toasts, confirm box */

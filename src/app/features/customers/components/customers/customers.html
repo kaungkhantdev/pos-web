@@ -1,0 +1,223 @@
+<div class="p-6 max-w-[1600px] mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 page-head">
+    <div>
+      <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Customers</h1>
+      <p class="text-[15px] text-gray-500 mt-1">Manage customers and view their purchase history.</p>
+    </div>
+    <button type="button" (click)="openCreate()"
+            class="inline-flex items-center gap-2 bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+      <i class="hgi-stroke hgi-add-01 text-lg" aria-hidden="true"></i> Add Customer
+    </button>
+    <app-header-tools />
+  </div>
+
+  <!-- Table card -->
+  <div class="bg-white rounded-2xl overflow-hidden">
+
+    <!-- Toolbar -->
+    <div class="flex items-center justify-between gap-3 p-4">
+      <div class="relative w-full max-w-xs">
+        <i class="hgi-stroke hgi-search-01 absolute inset-y-0 left-4 flex items-center leading-none text-gray-400" aria-hidden="true"></i>
+        <input type="search" placeholder="Search name or phone" aria-label="Search customers"
+               [value]="search()" (input)="onSearch($any($event.target).value)"
+               class="w-full h-10 pl-10 pr-4 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+      </div>
+
+      <div class="relative shrink-0">
+        <button type="button" aria-label="Filter by tier" [attr.aria-expanded]="filterOpen()"
+                (click)="filterOpen.set(!filterOpen())"
+                class="w-10 h-10 rounded-xl border flex items-center justify-center hover:bg-gray-50"
+                [class]="tier() === 'all' ? 'border-gray-200 bg-white text-gray-400' : 'border-[#00c066] bg-[#00c066]/10 text-[#00994f]'">
+          <i class="hgi-stroke hgi-filter-horizontal text-lg" aria-hidden="true"></i>
+        </button>
+        @if (filterOpen()) {
+          <div class="fixed inset-0 z-10" (click)="filterOpen.set(false)"></div>
+          <div class="absolute right-0 mt-2 w-44 bg-white rounded-xl border border-gray-100 shadow-lg p-1 z-20" role="menu">
+            @for (o of tierOptions; track o.value) {
+              <button type="button" role="menuitemradio" [attr.aria-checked]="tier() === o.value"
+                      class="w-full flex items-center justify-between px-3 h-9 rounded-lg text-sm hover:bg-gray-50"
+                      [class]="tier() === o.value ? 'text-[#00994f] font-semibold' : 'text-gray-600'"
+                      (click)="setTier(o.value)">
+                {{ o.label }}
+                @if (tier() === o.value) { <i class="hgi-stroke hgi-tick-02" aria-hidden="true"></i> }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+        <tr class="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+          <th class="text-left font-medium px-5 py-3">Customer</th>
+          <th class="text-left font-medium px-5 py-3">Phone</th>
+          <th class="text-left font-medium px-5 py-3">Orders</th>
+          <th class="text-left font-medium px-5 py-3">Total Spent</th>
+          <th class="text-left font-medium px-5 py-3">Points</th>
+          <th class="text-left font-medium px-5 py-3">Last Visit</th>
+          <th class="text-right font-medium px-5 py-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (c of rows(); track c.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-3">
+                  <span class="w-10 h-10 rounded-full font-semibold text-sm flex items-center justify-center shrink-0 {{ tone(c) }}">{{ initials(c) }}</span>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-gray-900">{{ c.name }}</p>
+                    <p class="text-xs text-gray-400 truncate">{{ c.email || '—' }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-4 text-gray-600 whitespace-nowrap">{{ c.phone || '—' }}</td>
+              <td class="px-5 py-4 text-gray-600">{{ c.orderCount }}</td>
+              <td class="px-5 py-4 text-gray-900 font-medium">{{ c.totalSpent | baht }}</td>
+              <td class="px-5 py-4">
+                <span class="inline-flex items-center gap-1 text-amber-600 font-medium">
+                  <i class="hgi-stroke hgi-star text-sm" aria-hidden="true"></i>{{ c.points | number }}
+                </span>
+              </td>
+              <td class="px-5 py-4 text-gray-500 whitespace-nowrap">{{ c.lastVisit ? (c.lastVisit | date: 'dd MMM yyyy') : 'Never' }}</td>
+              <td class="px-5 py-4">
+                <div class="flex items-center justify-end gap-1">
+                  <button type="button" (click)="openHistory(c)" [attr.aria-label]="'Purchase history for ' + c.name" title="History"
+                          class="w-8 h-8 rounded-lg text-gray-400 hover:text-[#00994f] hover:bg-[#00c066]/10 flex items-center justify-center">
+                    <i class="hgi-stroke hgi-time-02 text-base" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" (click)="openEdit(c)" [attr.aria-label]="'Edit ' + c.name"
+                          class="w-8 h-8 rounded-lg text-gray-400 hover:text-[#00994f] hover:bg-[#00c066]/10 flex items-center justify-center">
+                    <i class="hgi-stroke hgi-pencil-edit-02 text-base" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" (click)="remove(c)" [attr.aria-label]="'Delete ' + c.name"
+                          class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center">
+                    <i class="hgi-stroke hgi-delete-02 text-base" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="px-5 py-12 text-center text-gray-400">
+                <i class="hgi-stroke hgi-user-group text-2xl block mb-2" aria-hidden="true"></i>
+                @if (search() || tier() !== 'all') { No customers match your search. }
+                @else { No customers yet. Add your first one. }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between px-5 py-3 text-sm text-gray-500">
+      <span>Showing {{ rows().length }} of {{ filtered().length }} customers</span>
+      <div class="flex items-center gap-1">
+        <button type="button" aria-label="Previous page" [disabled]="page() <= 1" (click)="goTo(page() - 1)"
+                class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-40">
+          <i class="hgi-stroke hgi-arrow-left-01" aria-hidden="true"></i>
+        </button>
+        @for (p of pages(); track p) {
+          <button type="button" (click)="goTo(p)" [attr.aria-current]="p === page() ? 'page' : null"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold"
+                  [class]="p === page() ? 'bg-[#00c066] text-white' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'">{{ p }}</button>
+        }
+        <button type="button" aria-label="Next page" [disabled]="page() >= pageCount()" (click)="goTo(page() + 1)"
+                class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-40">
+          <i class="hgi-stroke hgi-arrow-right-01" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CREATE / EDIT ===================== -->
+<app-modal [(open)]="formOpen"
+           [title]="editing() ? 'Edit Customer' : 'Add Customer'"
+           [icon]="editing() ? 'hgi-pencil-edit-02' : 'hgi-add-01'">
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    @let f = form.controls;
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label for="custName" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+        <input id="custName" type="text" formControlName="name" placeholder="e.g. Anong Prasert" maxlength="80"
+               [attr.aria-invalid]="invalid(f.name)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid(f.name) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.name)) { <p class="text-xs text-red-600 mt-1.5">Enter the customer's name.</p> }
+      </div>
+      <div>
+        <label for="custPhone" class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+        <input id="custPhone" type="tel" inputmode="tel" formControlName="phone" placeholder="08x-xxx-xxxx"
+               [attr.aria-invalid]="invalid(f.phone)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid(f.phone) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.phone)) {
+          <p class="text-xs text-red-600 mt-1.5">
+            @if (f.phone.hasError('duplicate')) { Another customer already uses this number. }
+            @else { Use a Thai number like 081-234-5678. }
+          </p>
+        }
+      </div>
+      <div>
+        <label for="custEmail" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+        <input id="custEmail" type="email" formControlName="email" placeholder="name@email.com"
+               [attr.aria-invalid]="invalid(f.email)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid(f.email) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.email)) { <p class="text-xs text-red-600 mt-1.5">Enter a valid email address.</p> }
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+      <button type="button" (click)="formOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+      <button type="submit" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold transition-colors">
+        {{ editing() ? 'Save Changes' : 'Add Customer' }}
+      </button>
+    </div>
+  </form>
+</app-modal>
+
+<!-- ===================== HISTORY ===================== -->
+<app-modal [(open)]="historyOpen" [title]="'Purchase History — ' + (viewing()?.name ?? '')" icon="hgi-time-02">
+  @if (viewing(); as c) {
+    @let t = tiers[tierOf(c.points)];
+    <div class="px-6 pt-4">
+      <div class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#00c066]/10 to-amber-50 border border-[#00c066]/15 px-4 py-3">
+        <span class="w-11 h-11 rounded-xl bg-white text-[#00994f] flex items-center justify-center shrink-0">
+          <i class="hgi-stroke hgi-star text-xl" aria-hidden="true"></i>
+        </span>
+        <div class="flex-1">
+          <p class="text-xs text-gray-500">Loyalty points</p>
+          <p class="text-xl font-semibold text-gray-900">{{ c.points | number }} <span class="text-sm font-medium text-gray-400">pts</span></p>
+        </div>
+        <span class="text-xs font-semibold bg-white px-2.5 py-1 rounded-full {{ t.badge }}">{{ t.label }}</span>
+      </div>
+    </div>
+
+    <p class="px-6 pt-4 pb-1 text-xs font-medium text-gray-400 uppercase tracking-wider">Order history</p>
+    <div class="px-6 pb-2 divide-y divide-gray-100 max-h-72 overflow-y-auto">
+      @for (o of history(); track o.id) {
+        <div class="flex items-center justify-between py-3">
+          <div>
+            <p class="font-semibold text-gray-900 text-sm">#{{ o.id }}</p>
+            <p class="text-xs text-gray-400">{{ o.at | date: 'dd MMM yyyy' }} · {{ o.type | orderTypeLabel }} · {{ o.items }} items</p>
+          </div>
+          <div class="text-right">
+            <span class="font-medium text-gray-900">{{ o.total | baht }}</span>
+            <p class="text-[11px] text-green-600">+{{ o.earned | number }} pts</p>
+          </div>
+        </div>
+      } @empty {
+        <p class="py-8 text-center text-sm text-gray-400">No orders yet.</p>
+      }
+    </div>
+  }
+  <div class="flex justify-end p-5 border-t border-gray-100">
+    <button type="button" (click)="historyOpen.set(false)" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold">Close</button>
+  </div>
+</app-modal>

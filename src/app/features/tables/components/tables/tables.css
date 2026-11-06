@@ -1,0 +1,18 @@
+.tbl-sel {
+  border-color: #00994f !important;
+  background: rgba(195, 242, 79, 0.06);
+}
+.tbl-action {
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.tbl-action:hover:not(:disabled) { background: #f9fafb; }
+.tbl-action:disabled { opacity: 0.4; cursor: not-allowed; }

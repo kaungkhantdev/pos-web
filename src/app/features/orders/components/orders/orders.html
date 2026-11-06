@@ -1,0 +1,212 @@
+<div class="p-6 max-w-[1600px] mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 page-head">
+    <div>
+      <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Orders</h1>
+      <p class="text-[15px] text-gray-500 mt-1">Track dine-in, takeaway and delivery orders in real time.</p>
+    </div>
+    <a routerLink="/pos"
+       class="inline-flex items-center gap-2 bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+      <i class="hgi-stroke hgi-add-01 text-lg" aria-hidden="true"></i> New Order
+    </a>
+    <app-header-tools />
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    @for (s of stats(); track s.label) {
+      <div class="bg-white rounded-2xl p-4">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <span class="text-gray-400 w-5 h-5 flex items-center justify-center">
+            @if (s.icon) {
+              <i class="hgi-stroke {{ s.icon }} text-lg leading-none" aria-hidden="true"></i>
+            } @else {
+              <ng-container *ngTemplateOutlet="typeIcon; context: { $implicit: s.paths, size: 18 }" />
+            }
+          </span>
+          <span>{{ s.label }}</span>
+        </div>
+        <p class="text-[26px] leading-none font-semibold text-gray-900 mt-3">{{ s.value }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Table card -->
+  <div class="bg-white rounded-2xl overflow-hidden">
+
+    <!-- Toolbar -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-4">
+      <div class="flex items-center gap-1 bg-[#f4f4f5] rounded-xl p-1 w-fit max-w-full overflow-x-auto scrollbar-hide" role="tablist">
+        @for (t of tabs; track t.key) {
+          <button type="button" role="tab" [attr.aria-selected]="tab() === t.key" (click)="setTab(t.key)"
+                  class="px-4 h-9 rounded-lg text-sm font-medium whitespace-nowrap"
+                  [class]="tab() === t.key ? 'bg-[#00c066] text-white' : 'text-gray-500 hover:bg-white'">{{ t.label }}</button>
+        }
+      </div>
+      <div class="relative w-full max-w-xs">
+        <i class="hgi-stroke hgi-search-01 absolute inset-y-0 left-4 flex items-center leading-none text-gray-400" aria-hidden="true"></i>
+        <input type="search" placeholder="Search order, table or customer" aria-label="Search orders"
+               [value]="search()" (input)="onSearch($any($event.target).value)"
+               class="w-full h-10 pl-10 pr-4 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+        <tr class="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+          <th class="text-left font-medium px-5 py-3">Order</th>
+          <th class="text-left font-medium px-5 py-3">Type</th>
+          <th class="text-left font-medium px-5 py-3">Table / Customer</th>
+          <th class="text-left font-medium px-5 py-3">Items</th>
+          <th class="text-left font-medium px-5 py-3">Total</th>
+          <th class="text-left font-medium px-5 py-3">Status</th>
+          <th class="text-left font-medium px-5 py-3">Time</th>
+          <th class="text-right font-medium px-5 py-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (o of rows(); track o.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-5 py-4 font-semibold text-gray-900 whitespace-nowrap">#{{ o.id }}</td>
+              <td class="px-5 py-4">
+                <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap {{ typeStyle[o.type].badge }}">
+                  <ng-container *ngTemplateOutlet="typeIcon; context: { $implicit: typeStyle[o.type].paths, size: 13 }" />
+                  {{ o.type | orderTypeLabel }}
+                </span>
+              </td>
+              <td class="px-5 py-4 text-gray-600 whitespace-nowrap">{{ where(o) }}</td>
+              <td class="px-5 py-4 text-gray-600">{{ itemCount(o) }}</td>
+              <td class="px-5 py-4 text-gray-900 font-medium">{{ total(o) | baht }}</td>
+              <td class="px-5 py-4">
+                <span class="text-xs font-medium px-2.5 py-1 rounded-full {{ statusStyle[o.status].badge }}">{{ statusStyle[o.status].label }}</span>
+              </td>
+              <td class="px-5 py-4 text-gray-500">{{ o.createdAt | date: 'HH:mm' }}</td>
+              <td class="px-5 py-4">
+                <div class="flex items-center justify-end gap-1">
+                  <button type="button" (click)="view(o)" [attr.aria-label]="'View ' + o.id" title="View"
+                          class="w-8 h-8 rounded-lg text-gray-400 hover:text-[#00994f] hover:bg-[#00c066]/10 flex items-center justify-center">
+                    <i class="hgi-stroke hgi-view text-base" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" (click)="print(o)" [attr.aria-label]="'Print ticket for ' + o.id" title="Print ticket"
+                          class="w-8 h-8 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 flex items-center justify-center">
+                    <i class="hgi-stroke hgi-printer text-base" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="px-5 py-12 text-center text-gray-400">
+                <i class="hgi-stroke hgi-invoice-03 text-2xl block mb-2" aria-hidden="true"></i>
+                @if (search()) { No orders match “{{ search() }}”. } @else { No orders here yet. }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between px-5 py-3 text-sm text-gray-500">
+      <span>Showing {{ rows().length }} of {{ filtered().length }} orders</span>
+      <div class="flex items-center gap-1">
+        <button type="button" aria-label="Previous page" [disabled]="page() <= 1" (click)="goTo(page() - 1)"
+                class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-40">
+          <i class="hgi-stroke hgi-arrow-left-01" aria-hidden="true"></i>
+        </button>
+        @for (p of pages(); track p) {
+          <button type="button" (click)="goTo(p)" [attr.aria-current]="p === page() ? 'page' : null"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold"
+                  [class]="p === page() ? 'bg-[#00c066] text-white' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'">{{ p }}</button>
+        }
+        <button type="button" aria-label="Next page" [disabled]="page() >= pageCount()" (click)="goTo(page() + 1)"
+                class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-40">
+          <i class="hgi-stroke hgi-arrow-right-01" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ORDER DETAIL ===================== -->
+<app-modal [(open)]="detailOpen">
+  @if (viewing(); as o) {
+    <div class="flex items-center justify-between p-5 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-[#00c066]/10 text-[#00994f] flex items-center justify-center">
+          <i class="hgi-stroke hgi-invoice-03 text-lg" aria-hidden="true"></i>
+        </span>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">#{{ o.id }}</h3>
+          <p class="text-xs text-gray-400">{{ where(o) }} · {{ o.type | orderTypeLabel }} · {{ o.createdAt | date: 'dd MMM HH:mm' }}</p>
+        </div>
+      </div>
+      <button type="button" (click)="detailOpen.set(false)" aria-label="Close"
+              class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400">
+        <i class="hgi-stroke hgi-cancel-01" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="px-6 pt-5">
+      <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Order status</p>
+      <div class="grid grid-cols-4 gap-1 bg-[#f4f4f5] rounded-xl p-1" role="radiogroup" aria-label="Order status">
+        @for (s of statusSteps; track s) {
+          @let on = o.status === s;
+          <button type="button" role="radio" [attr.aria-checked]="on"
+                  [disabled]="o.status === 'paid'"
+                  [title]="s === 'paid' && !on ? 'Opens POS to take payment' : ''"
+                  (click)="setStatus(o, s)"
+                  class="h-9 rounded-lg text-xs disabled:cursor-not-allowed"
+                  [class]="on ? 'font-semibold text-white ' + statusStyle[s].active : 'font-medium text-gray-500 hover:bg-white'">
+            {{ statusStyle[s].label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="px-6 py-5 text-sm space-y-3">
+      @for (line of o.lines; track $index) {
+        <div class="flex justify-between gap-3">
+          <div>
+            <p class="font-medium text-gray-800">{{ line.name }} ×{{ line.qty }}</p>
+            @if (line.note) { <p class="text-xs text-amber-600">{{ line.note }}</p> }
+          </div>
+          <span class="text-gray-900 whitespace-nowrap">{{ line.price * line.qty | baht }}</span>
+        </div>
+      }
+      <div class="flex justify-between text-gray-500 pt-2 border-t border-dashed border-gray-200">
+        <span>Tax ({{ taxPercent }}%)</span><span>{{ tax(o) | baht: 2 }}</span>
+      </div>
+      <div class="flex justify-between font-semibold text-gray-900 pt-2 border-t border-dashed border-gray-200">
+        <span>Total</span><span class="text-[#00994f]">{{ total(o) | baht: 2 }}</span>
+      </div>
+    </div>
+
+    <div class="flex gap-3 p-5 border-t border-gray-100">
+      <button type="button" (click)="detailOpen.set(false)"
+              class="flex-1 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Close</button>
+      @if (o.status === 'paid') {
+        <button type="button" (click)="print(o)"
+                class="flex-1 h-10 rounded-xl bg-[#1b1b1d] hover:bg-black text-white text-sm font-semibold flex items-center justify-center gap-2">
+          <i class="hgi-stroke hgi-printer text-base" aria-hidden="true"></i> Print Receipt
+        </button>
+      } @else {
+        <button type="button" (click)="pay(o)"
+                class="flex-1 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold flex items-center justify-center gap-2">
+          <i class="hgi-stroke hgi-credit-card text-base" aria-hidden="true"></i> Pay
+        </button>
+      }
+    </div>
+  }
+</app-modal>
+
+<!-- Kit's line icons for order types -->
+<ng-template #typeIcon let-paths let-size="size">
+  <svg [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    @for (d of paths; track d) { <path [attr.d]="d" /> }
+  </svg>
+</ng-template>

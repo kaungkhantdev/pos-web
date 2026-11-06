@@ -1,0 +1,278 @@
+<div class="p-6 max-w-[1600px] mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 page-head">
+    <div>
+      <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Reports</h1>
+      <p class="text-[15px] text-gray-500 mt-1">Sales, inventory and profit insights.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <select aria-label="Report period" (change)="period.set($any($event.target).value)"
+              class="h-10 px-4 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-[#00c066] text-sm text-gray-600">
+        @for (p of periods; track p.key) {
+          <option [value]="p.key" [selected]="p.key === period()">{{ p.label }}</option>
+        }
+      </select>
+      <button type="button" (click)="export()"
+              class="inline-flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+        <i class="hgi-stroke hgi-download-04 text-lg" aria-hidden="true"></i> Export
+      </button>
+    </div>
+    <app-header-tools />
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-4 items-start">
+
+    <!-- ===== Report navigation ===== -->
+    <aside class="w-full lg:w-60 shrink-0 lg:sticky lg:top-0 space-y-4">
+      <nav class="report-nav bg-white rounded-2xl p-2" aria-label="Report type">
+        <p class="hidden lg:block px-3 pt-2 pb-1 text-xs font-medium text-gray-400">Reports</p>
+        @for (t of types; track t.key) {
+          <button type="button" class="report-nav-item" [class.active]="report() === t.key"
+                  [attr.aria-current]="report() === t.key ? 'page' : null" (click)="report.set(t.key)">
+            <i class="hgi-stroke {{ t.icon }} text-lg leading-none" aria-hidden="true"></i><span>{{ t.label }}</span>
+          </button>
+        }
+      </nav>
+
+      <div class="hidden lg:block bg-white rounded-2xl p-4">
+        @let r = range();
+        <p class="text-xs font-medium text-gray-400">Report period</p>
+        <p class="text-sm font-semibold text-gray-900 mt-1">
+          @if (period() === 'today') { {{ r.from | date: 'd MMM yyyy' }} }
+          @else { {{ r.from | date: 'd MMM' }} – {{ r.to | date: 'd MMM yyyy' }} }
+        </p>
+        <p class="text-xs text-gray-500 mt-3">Compared with</p>
+        <p class="text-sm text-gray-700">
+          @if (period() === 'today') { {{ r.prevFrom | date: 'd MMM yyyy' }} }
+          @else { {{ r.prevFrom | date: 'd MMM' }} – {{ r.prevTo | date: 'd MMM yyyy' }} }
+        </p>
+        <div class="h-px bg-gray-100 my-3"></div>
+        <p class="text-xs text-gray-400">Updated {{ updatedAt | date: 'dd MMM yyyy, HH:mm' }}</p>
+      </div>
+    </aside>
+
+    <!-- ===== Report content ===== -->
+    <div class="flex-1 min-w-0 space-y-4">
+      @for (section of layout(); track section) {
+        @switch (section) {
+
+          <!-- Overview: headline, KPI strip, trend -->
+          @case ('overview') {
+            @let s = summary();
+            <section class="bg-white rounded-2xl p-5" aria-labelledby="overviewTitle">
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p id="overviewTitle" class="text-sm text-gray-500">Gross sales · {{ periodInfo().label }}</p>
+                  <div class="flex flex-wrap items-end gap-3 mt-1">
+                    <p class="text-4xl font-semibold tracking-tight text-gray-900">{{ s.gross | baht }}</p>
+                    <span class="mb-1 inline-flex items-center gap-1">
+                      <ng-container *ngTemplateOutlet="delta; context: { $implicit: s.grossChange }" />
+                      <span class="text-sm text-gray-400">{{ periodInfo().compare }}</span>
+                    </span>
+                  </div>
+                </div>
+                <span class="inline-flex items-center gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 h-8">
+                  <span class="w-2 h-2 rounded-full bg-[#00c066]"></span>{{ trend().badge }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-0 sm:divide-x divide-gray-100 border-y border-gray-100 py-4 my-5">
+                <div class="sm:pr-5">
+                  <p class="text-xs text-gray-500">Net profit</p>
+                  <div class="flex items-end justify-between gap-2 mt-1">
+                    <p class="text-xl font-semibold text-gray-900">{{ s.net | baht }}</p>
+                    <ng-container *ngTemplateOutlet="delta; context: { $implicit: s.profitChange, small: true }" />
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1">{{ s.margin | number: '1.1-1' }}% margin</p>
+                </div>
+                <div class="sm:px-5">
+                  <p class="text-xs text-gray-500">Total orders</p>
+                  <div class="flex items-end justify-between gap-2 mt-1">
+                    <p class="text-xl font-semibold text-gray-900">{{ s.orders | number }}</p>
+                    <ng-container *ngTemplateOutlet="delta; context: { $implicit: s.ordersChange, small: true }" />
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1">≈ {{ s.perDay | number: '1.0-0' }} per day</p>
+                </div>
+                <div class="sm:pl-5">
+                  <p class="text-xs text-gray-500">Avg. order value</p>
+                  <div class="flex items-end justify-between gap-2 mt-1">
+                    <p class="text-xl font-semibold text-gray-900">{{ s.avg | baht: 0 }}</p>
+                    <ng-container *ngTemplateOutlet="delta; context: { $implicit: s.avgChange, small: true }" />
+                  </div>
+                  <p class="text-xs text-gray-400 mt-1">per order</p>
+                </div>
+              </div>
+
+              <h2 class="font-semibold text-gray-900">Sales trend</h2>
+              <app-trend-chart class="block mt-2" [labels]="trend().labels" [values]="trend().values" />
+            </section>
+          }
+
+          <!-- Daily / monthly: top products + staff side by side -->
+          @case ('top') {
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <ng-container *ngTemplateOutlet="productsTpl; context: { $implicit: 4 }" />
+              <ng-container *ngTemplateOutlet="staffTpl; context: { $implicit: 3 }" />
+            </div>
+          }
+          @case ('products') { <ng-container *ngTemplateOutlet="productsTpl; context: { $implicit: 0 }" /> }
+          @case ('staff') { <ng-container *ngTemplateOutlet="staffTpl; context: { $implicit: 0 }" /> }
+
+          <!-- Ingredient usage -->
+          @case ('ingredients') {
+            @let ing = ingredients();
+            <section class="bg-white rounded-2xl overflow-hidden">
+              <div class="flex flex-wrap items-center justify-between gap-2 px-5 pt-5 pb-3">
+                <div>
+                  <h2 class="font-semibold text-gray-900">Ingredient usage</h2>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ periodInfo().label }} · share of ingredient cost</p>
+                </div>
+                <p class="text-sm text-gray-500">Total cost <span class="font-semibold text-gray-900">{{ ing.total | baht }}</span></p>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                  <tr>
+                    <th class="text-left px-5 py-3">Ingredient</th>
+                    <th class="text-left px-5 py-3">Used</th>
+                    <th class="text-left px-5 py-3">Share of cost</th>
+                    <th class="text-right px-5 py-3">Cost</th>
+                  </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    @for (r of ing.rows; track r.name) {
+                      <tr>
+                        <td class="px-5 py-3 font-medium text-gray-900">{{ r.name }}</td>
+                        <td class="px-5 py-3 text-gray-600">{{ r.used | number: '1.0-1' }} {{ r.unit }}</td>
+                        <td class="px-5 py-3 w-[38%]">
+                          <div class="flex items-center gap-3">
+                            <div class="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                              <div class="h-full rounded-full bg-[#00c066]/60" [style.width.%]="r.share"></div>
+                            </div>
+                            <span class="text-xs text-gray-500 w-9 text-right">{{ r.share | number: '1.0-0' }}%</span>
+                          </div>
+                        </td>
+                        <td class="px-5 py-3 text-right font-semibold text-gray-900">{{ r.cost | baht }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
+
+          <!-- Profit -->
+          @case ('profit') {
+            @let p = profit();
+            <section class="bg-white rounded-2xl p-5">
+              <p class="text-sm text-gray-500">Net profit · {{ periodInfo().label }}</p>
+              <div class="flex flex-wrap items-end gap-3 mt-1">
+                <p class="text-4xl font-semibold tracking-tight" [class]="p.net >= 0 ? 'text-gray-900' : 'text-red-600'">{{ p.net | baht }}</p>
+                <span class="mb-1 inline-flex items-center gap-1">
+                  <ng-container *ngTemplateOutlet="delta; context: { $implicit: summary().profitChange }" />
+                  <span class="text-sm text-gray-400">{{ periodInfo().compare }}</span>
+                </span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">{{ p.margin | number: '1.1-1' }}% margin on {{ p.gross | baht }} gross sales</p>
+
+              <!-- where each baht goes -->
+              <div class="flex h-3 rounded-full overflow-hidden bg-gray-100 mt-5" role="img"
+                   [attr.aria-label]="'Costs take ' + (100 - p.netShare | number: '1.0-0') + '% of sales'">
+                @for (c of p.costs; track c.label) { <div class="{{ c.color }}" [style.width.%]="c.share"></div> }
+                <div class="bg-[#00994f]" [style.width.%]="p.netShare"></div>
+              </div>
+
+              <ul class="divide-y divide-gray-100 mt-5 text-sm">
+                <li class="flex items-center justify-between py-3">
+                  <span class="text-gray-600">Gross sales</span>
+                  <span class="font-semibold text-gray-900">{{ p.gross | baht }}</span>
+                </li>
+                @for (c of p.costs; track c.label) {
+                  <li class="flex items-center justify-between py-3">
+                    <span class="flex items-center gap-2 text-gray-600"><span class="w-2.5 h-2.5 rounded-full {{ c.color }}"></span>{{ c.label }}</span>
+                    <span class="flex items-center gap-4">
+                      <span class="text-xs text-gray-400 w-12 text-right">{{ c.share | number: '1.1-1' }}%</span>
+                      <span class="font-medium text-gray-900 w-28 text-right">−{{ c.amount | baht }}</span>
+                    </span>
+                  </li>
+                }
+                <li class="flex items-center justify-between pt-3">
+                  <span class="flex items-center gap-2 font-semibold text-gray-900"><span class="w-2.5 h-2.5 rounded-full bg-[#00994f]"></span>Net profit</span>
+                  <span class="font-semibold" [class]="p.net >= 0 ? 'text-[#00994f]' : 'text-red-600'">{{ p.net | baht }}</span>
+                </li>
+              </ul>
+            </section>
+          }
+        }
+      }
+    </div>
+  </div>
+</div>
+
+<!-- ===== Reusable pieces ===== -->
+
+<!-- ▲ 5.4% / ▼ 1.2% -->
+<ng-template #delta let-v let-small="small">
+  <span class="inline-flex items-center gap-1 font-medium" [class]="(v >= 0 ? 'text-[#00c066]' : 'text-red-500') + (small ? ' text-xs' : ' text-sm')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      @if (v >= 0) { <path d="M7 17 17 7M8 7h9v9" /> } @else { <path d="M7 7l10 10M17 8v9H8" /> }
+    </svg>
+    <span class="sr-only">{{ v >= 0 ? 'up' : 'down' }}</span>{{ abs(v) | number: '1.1-1' }}%
+  </span>
+</ng-template>
+
+<!-- products; limit 0 = all -->
+<ng-template #productsTpl let-limit>
+  <section class="bg-white rounded-2xl p-5">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900">{{ limit ? 'Top products' : 'Menu sales' }}</h2>
+      <span class="text-xs text-gray-400">By units sold · {{ periodInfo().label }}</span>
+    </div>
+    <ol class="divide-y divide-gray-100 mt-2">
+      @for (p of limit ? products().slice(0, limit) : products(); track p.name; let i = $index) {
+        <li class="py-3">
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded-lg font-semibold text-xs flex items-center justify-center shrink-0 {{ tone(i) }}">{{ i + 1 }}</span>
+            <p class="flex-1 min-w-0 text-sm font-medium text-gray-900 truncate">{{ p.name }}</p>
+            <span class="text-sm font-semibold text-gray-900">{{ p.revenue | baht }}</span>
+          </div>
+          <div class="flex items-center gap-3 mt-2 pl-10">
+            <div class="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+              <div class="h-full rounded-full bg-[#00c066]" [style.width.%]="(p.units / maxUnits()) * 100"></div>
+            </div>
+            <span class="text-xs text-gray-400 w-20 text-right">{{ p.units | number }} sold</span>
+          </div>
+        </li>
+      }
+    </ol>
+  </section>
+</ng-template>
+
+<!-- staff; limit 0 = all -->
+<ng-template #staffTpl let-limit>
+  <section class="bg-white rounded-2xl p-5">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold text-gray-900">Staff sales</h2>
+      <span class="text-xs text-gray-400">{{ periodInfo().label }}</span>
+    </div>
+    <ul class="divide-y divide-gray-100 mt-2">
+      @for (s of limit ? staff().slice(0, limit) : staff(); track s.name; let i = $index) {
+        <li class="flex items-center gap-3 py-3">
+          <span class="w-10 h-10 rounded-full font-semibold text-xs flex items-center justify-center shrink-0 {{ tone(i) }}">{{ initials(s.name) }}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="text-sm font-medium text-gray-900 truncate">{{ s.name }}</p>
+              @if (i === 0) { <span class="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Top seller</span> }
+            </div>
+            <p class="text-xs text-gray-400">{{ s.role }} · {{ s.orders | number }} orders</p>
+            <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden mt-2">
+              <div class="h-full rounded-full bg-[#1b1b1d]" [style.width.%]="(s.sales / maxSales()) * 100"></div>
+            </div>
+          </div>
+          <span class="text-sm font-semibold text-gray-900 self-start">{{ s.sales | baht }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+</ng-template>

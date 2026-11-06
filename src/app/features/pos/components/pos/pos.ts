@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import {
   ACTIVE_ORDERS,
@@ -71,7 +71,7 @@ export class Pos {
   orderId = computed(() => `ORD-${this.orderNo()}`);
   recipient = signal('Hilal Achmad');
   orderType = signal<OrderType>('dine_in');
-  table = signal('19');
+  table = signal(inject(ActivatedRoute).snapshot.queryParamMap.get('table') ?? '');
   cart = signal<CartLine[]>(START_CART);
 
   discountMode = signal<'percent' | 'amount'>('amount');

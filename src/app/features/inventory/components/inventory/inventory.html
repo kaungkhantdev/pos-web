@@ -1,0 +1,221 @@
+<div class="p-6 max-w-[1600px] mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 page-head">
+    <div>
+      <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Ingredients</h1>
+      <p class="text-[15px] text-gray-500 mt-1">Track ingredient stock, movements and adjustments.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" (click)="openAdjust()"
+              class="inline-flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+        <i class="hgi-stroke hgi-exchange-01 text-lg" aria-hidden="true"></i> Adjust Stock
+      </button>
+      <button type="button" (click)="openStockIn()"
+              class="inline-flex items-center gap-2 bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+        <i class="hgi-stroke hgi-download-04 text-lg" aria-hidden="true"></i> Stock In
+      </button>
+    </div>
+    <app-header-tools />
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    @for (s of stats(); track s.label) {
+      <div class="bg-white rounded-2xl p-4">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <span class="text-gray-400 w-5 h-5 flex items-center justify-center">
+            <i class="hgi-stroke {{ s.icon }} text-lg leading-none" aria-hidden="true"></i>
+          </span>
+          <span>{{ s.label }}</span>
+        </div>
+        <p class="text-[26px] leading-none font-semibold text-gray-900 mt-3">{{ s.value }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex items-center gap-1 mb-4 bg-white rounded-xl p-1 w-fit" role="tablist">
+    @for (t of tabs; track t.key) {
+      <button type="button" role="tab" [attr.aria-selected]="tab() === t.key" (click)="tab.set(t.key)"
+              class="px-4 h-9 rounded-lg text-sm font-medium inline-flex items-center gap-2"
+              [class]="tab() === t.key ? 'bg-[#00c066] text-white' : 'text-gray-500 hover:bg-gray-50'">
+        {{ t.label }}
+        @if (t.key === 'lowstock' && lowStock().length) {
+          <span class="text-[11px] font-semibold px-1.5 rounded-full"
+                [class]="tab() === t.key ? 'bg-white/25 text-white' : 'bg-red-50 text-red-500'">{{ lowStock().length }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  @if (tab() === 'movements') {
+    <!-- Movement history -->
+    <div class="bg-white rounded-2xl overflow-hidden" role="tabpanel">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+          <tr class="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+            <th class="text-left font-medium px-5 py-3">Ingredient</th>
+            <th class="text-left font-medium px-5 py-3">Type</th>
+            <th class="text-left font-medium px-5 py-3">Change</th>
+            <th class="text-left font-medium px-5 py-3">Balance</th>
+            <th class="text-left font-medium px-5 py-3">By</th>
+            <th class="text-right font-medium px-5 py-3">Date</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (m of movements(); track m.id) {
+              @let ing = byId().get(m.ingredientId);
+              <tr class="hover:bg-gray-50">
+                <td class="px-5 py-4">
+                  <p class="font-semibold text-gray-900">{{ ing?.name ?? 'Unknown' }}</p>
+                  @if (m.note) { <p class="text-xs text-gray-400">{{ m.note }}</p> }
+                </td>
+                <td class="px-5 py-4">
+                  <span class="text-xs font-medium px-2.5 py-1 rounded-full {{ types[m.type].badge }}">{{ types[m.type].label }}</span>
+                </td>
+                <td class="px-5 py-4 font-medium" [class]="m.change > 0 ? 'text-green-600' : 'text-red-500'">
+                  {{ m.change > 0 ? '+' : '' }}{{ m.change }}
+                </td>
+                <td class="px-5 py-4 text-gray-600">{{ m.balance }} <span class="text-gray-400 text-xs">{{ ing?.unit }}</span></td>
+                <td class="px-5 py-4 text-gray-600">{{ m.by }}</td>
+                <td class="px-5 py-4 text-right text-gray-500 whitespace-nowrap">{{ m.at | date: 'dd MMM HH:mm' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="px-5 py-12 text-center text-gray-400">No stock movements yet.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <!-- Low-stock ingredients -->
+    <div class="bg-white rounded-2xl overflow-hidden" role="tabpanel">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+          <tr class="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+            <th class="text-left font-medium px-5 py-3">Ingredient</th>
+            <th class="text-left font-medium px-5 py-3">SKU</th>
+            <th class="text-left font-medium px-5 py-3">Current</th>
+            <th class="text-left font-medium px-5 py-3">Reorder Level</th>
+            <th class="text-right font-medium px-5 py-3">Action</th>
+          </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (i of lowStock(); track i.id) {
+              <tr class="hover:bg-gray-50">
+                <td class="px-5 py-4 font-semibold text-gray-900">{{ i.name }}</td>
+                <td class="px-5 py-4 text-gray-600">{{ i.sku }}</td>
+                <td class="px-5 py-4">
+                  <span class="text-xs font-medium px-2.5 py-1 rounded-full {{ levelClass(i) }}">
+                    {{ i.onHand <= 0 ? 'Out' : i.onHand }}
+                  </span>
+                </td>
+                <td class="px-5 py-4 text-gray-600">{{ i.reorderLevel }} <span class="text-gray-400 text-xs">{{ i.unit }}</span></td>
+                <td class="px-5 py-4 text-right">
+                  <button type="button" (click)="openStockIn(i)" class="text-sm font-medium text-[#00994f] hover:text-[#007a3f]">Restock</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="px-5 py-12 text-center text-gray-400">
+                  <i class="hgi-stroke hgi-checkmark-circle-02 text-2xl block mb-2 text-green-500" aria-hidden="true"></i>
+                  All ingredients are above their reorder level.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ===================== STOCK IN ===================== -->
+<app-modal [(open)]="stockInOpen" title="Stock In" icon="hgi-download-04">
+  <form [formGroup]="stockInForm" (ngSubmit)="saveStockIn()" novalidate>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label for="inIngredient" class="block text-sm font-medium text-gray-700 mb-2">Ingredient</label>
+        <select id="inIngredient" formControlName="ingredientId"
+                class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+                [class]="invalid('stockInForm', 'ingredientId') ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'">
+          <option [ngValue]="null" disabled>Select an ingredient</option>
+          @for (i of ingredients(); track i.id) {
+            <option [ngValue]="i.id">{{ i.name }} ({{ i.onHand }} {{ i.unit }})</option>
+          }
+        </select>
+        @if (invalid('stockInForm', 'ingredientId')) { <p class="text-xs text-red-600 mt-1.5">Choose an ingredient.</p> }
+      </div>
+      <div>
+        <label for="inQty" class="block text-sm font-medium text-gray-700 mb-2">Quantity to add</label>
+        <input id="inQty" type="number" min="0" step="any" formControlName="quantity" placeholder="0"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid('stockInForm', 'quantity') ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid('stockInForm', 'quantity')) { <p class="text-xs text-red-600 mt-1.5">Enter a quantity above 0.</p> }
+      </div>
+      <div>
+        <label for="inNote" class="block text-sm font-medium text-gray-700 mb-2">Note</label>
+        <input id="inNote" type="text" formControlName="note" maxlength="120" placeholder="e.g. Supplier delivery"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm transition-colors" />
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+      <button type="button" (click)="stockInOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+      <button type="submit" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold transition-colors">Add Stock</button>
+    </div>
+  </form>
+</app-modal>
+
+<!-- ===================== ADJUST ===================== -->
+<app-modal [(open)]="adjustOpen" title="Stock Adjustment" icon="hgi-exchange-01">
+  <form [formGroup]="adjustForm" (ngSubmit)="saveAdjust()" novalidate>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label for="adjIngredient" class="block text-sm font-medium text-gray-700 mb-2">Ingredient</label>
+        <select id="adjIngredient" formControlName="ingredientId"
+                class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+                [class]="invalid('adjustForm', 'ingredientId') ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'">
+          <option [ngValue]="null" disabled>Select an ingredient</option>
+          @for (i of ingredients(); track i.id) {
+            <option [ngValue]="i.id">{{ i.name }}</option>
+          }
+        </select>
+        @if (invalid('adjustForm', 'ingredientId')) { <p class="text-xs text-red-600 mt-1.5">Choose an ingredient.</p> }
+      </div>
+      <div>
+        <label for="adjQty" class="block text-sm font-medium text-gray-700 mb-2">New counted quantity</label>
+        <input id="adjQty" type="number" min="0" step="any" formControlName="quantity" placeholder="0"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid('adjustForm', 'quantity') ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid('adjustForm', 'quantity')) { <p class="text-xs text-red-600 mt-1.5">Enter the counted quantity (0 or more).</p> }
+
+        @let diff = adjustDiff();
+        @let selected = byId().get(adjustForm.controls.ingredientId.value ?? -1);
+        @if (selected) {
+          <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-2.5 mt-3 text-sm">
+            <span class="text-gray-500">On hand: <span class="font-medium text-gray-900">{{ selected.onHand }} {{ selected.unit }}</span></span>
+            @if (diff !== null) {
+              <span class="font-semibold" [class]="diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-500' : 'text-gray-400'">
+                {{ diff > 0 ? '+' : '' }}{{ diff }} {{ selected.unit }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+      <div>
+        <label for="adjReason" class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+        <select id="adjReason" formControlName="reason"
+                class="w-full h-10 px-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm transition-colors">
+          @for (r of reasons; track r.value) { <option [ngValue]="r.value">{{ r.label }}</option> }
+        </select>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+      <button type="button" (click)="adjustOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+      <button type="submit" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold transition-colors">Apply Adjustment</button>
+    </div>
+  </form>
+</app-modal>

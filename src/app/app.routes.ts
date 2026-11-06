@@ -9,8 +9,7 @@ export const routes: Routes = [
     path: 'auth',
     component: AuthLayout,
     canActivate: [guestGuard],
-    loadChildren: () =>
-      import('./features/auth/auth.routes').then((m) => m.authRoutes),
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.authRoutes),
   },
   {
     path: '',
@@ -24,10 +23,70 @@ export const routes: Routes = [
       },
       {
         path: 'pos',
-        title: 'Pos',
+        title: 'POS',
+        loadChildren: () => import('./features/pos/pos.routes').then((m) => m.posRoutes),
+      },
+      {
+        path: 'categories',
+        title: 'Menu Categories',
         loadChildren: () =>
-          import('./features/pos/pos.routes').then((m) => m.posRoutes),
+          import('./features/categories/category.routes').then((m) => m.categoriesRoutes),
+      },
+      {
+        path: 'inventory',
+        title: 'Ingredients',
+        loadChildren: () =>
+          import('./features/inventory/inventory.routes').then((m) => m.inventoryRoutes),
+      },
+      {
+        path: 'customers',
+        title: 'Customers',
+        loadChildren: () =>
+          import('./features/customers/customer.routes').then((m) => m.customerRoutes),
+      },
+      {
+        path: 'tables',
+        title: 'Tables',
+        loadChildren: () => import('./features/tables/table.routes').then((m) => m.tableRoutes),
+      },
+      {
+        path: 'orders',
+        title: 'Orders',
+        loadChildren: () => import('./features/orders/order.routes').then((m) => m.orderRoutes),
+      },
+      {
+        path: 'kitchen',
+        title: 'Kitchen Display',
+        loadChildren: () =>
+          import('./features/kitchen/kitchen.routes').then((m) => m.kitchenRoutes),
+      },
+      {
+        path: 'reports',
+        title: 'Reports',
+        loadChildren: () =>
+          import('./features/reports/report.routes').then((m) => m.reportRoutes),
+      },
+      {
+        path: 'products',
+        title: 'Menu Items',
+        loadChildren: () =>
+          import('./features/products/product.routes').then((m) => m.productRoutes),
+      },
+      {
+        path: 'users',
+        title: 'Staff',
+        loadChildren: () =>
+          import('./features/users/user.routes').then((m) => m.userRoutes),
+      },
+      {
+        path: 'settings',
+        title: 'Settings',
+        loadChildren: () =>
+          import('./features/settings/setting.routes').then((m) => m.settingRoutes),
       }
-    ]
-  }
+    ],
+  },
 ];
+// children: [
+//   { path: 'settings',   title: 'Settings',        loadComponent: () => import('./features/settings/settings').then((m) => m.Settings) },
+// ],

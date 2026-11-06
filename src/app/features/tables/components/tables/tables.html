@@ -1,0 +1,235 @@
+<div class="p-6 max-w-[1600px] mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 page-head">
+    <div>
+      <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Tables</h1>
+      <p class="text-[15px] text-gray-500 mt-1">Manage your floor — seat guests, merge, split or transfer tables.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button type="button" (click)="openMerge()"
+              class="inline-flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+        <i class="hgi-stroke hgi-arrow-merge text-lg" aria-hidden="true"></i> Merge
+      </button>
+      <button type="button" (click)="openAdd()"
+              class="inline-flex items-center gap-2 bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+        <i class="hgi-stroke hgi-add-01 text-lg" aria-hidden="true"></i> Add Table
+      </button>
+    </div>
+    <app-header-tools />
+  </div>
+
+  <!-- Stat cards (whole restaurant) -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    @for (s of stats(); track s.label) {
+      <div class="bg-white rounded-2xl p-4">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <span class="text-gray-400 w-5 h-5 flex items-center justify-center"><i class="hgi-stroke {{ s.icon }} text-lg leading-none" aria-hidden="true"></i></span>
+          <span>{{ s.label }}</span>
+        </div>
+        <p class="text-[26px] leading-none font-semibold text-gray-900 mt-3">{{ s.value }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Section tabs -->
+  <div class="flex items-center gap-1 mb-5 bg-white rounded-xl p-1 w-fit max-w-full overflow-x-auto scrollbar-hide" role="tablist" aria-label="Sections">
+    @for (s of sections; track s.value) {
+      <button type="button" role="tab" [attr.aria-selected]="section() === s.value" (click)="section.set(s.value)"
+              class="px-4 h-9 rounded-lg text-sm font-medium whitespace-nowrap inline-flex items-center gap-1.5"
+              [class]="section() === s.value ? 'bg-[#00c066] text-white' : 'text-gray-500 hover:bg-gray-50'">
+        {{ s.label }}
+        <span class="text-[11px] opacity-70">{{ sectionCount(s.value) }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Floor grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+    @for (t of floor(); track t.id) {
+      @let st = style[t.status];
+      <button type="button" (click)="open(t)" [attr.aria-label]="'Table ' + t.name + ', ' + st.label"
+              class="text-left rounded-xl border-2 p-4 transition-all hover:shadow-sm {{ st.card }}">
+        <div class="flex items-start justify-between gap-2">
+          <span class="text-lg font-semibold text-gray-900">{{ t.name }}</span>
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full {{ st.badge }}">
+            <span class="w-1.5 h-1.5 rounded-full {{ st.dot }}"></span>{{ st.label }}
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-3">
+          <i class="hgi-stroke hgi-user-multiple-02 text-sm" aria-hidden="true"></i> {{ t.seats }} seats
+        </div>
+        <div class="mt-1 text-xs min-h-[1rem]" [class]="t.mergedInto ? 'text-[#00994f] font-medium' : 'text-gray-500'">{{ detail(t) }}</div>
+      </button>
+    } @empty {
+      <div class="col-span-full bg-white rounded-2xl py-12 text-center text-sm text-gray-400">
+        <i class="hgi-stroke hgi-table-01 text-2xl block mb-2" aria-hidden="true"></i>
+        No tables in this section yet.
+        <button type="button" (click)="openAdd()" class="text-[#00994f] font-medium hover:text-[#007a3f]">Add one</button>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ===================== TABLE ACTIONS ===================== -->
+<app-modal [(open)]="actionsOpen">
+  @if (selected(); as t) {
+    <div class="flex items-center justify-between p-5 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <span class="w-11 h-11 rounded-full bg-[#00c066]/10 text-[#00994f] flex items-center justify-center font-semibold text-sm">{{ t.name }}</span>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Table {{ t.name }}</h3>
+          <p class="text-xs text-gray-400">{{ t.seats }} seats · {{ style[t.status].label }}@if (detail(t)) { · {{ detail(t) }} }</p>
+        </div>
+      </div>
+      <button type="button" (click)="actionsOpen.set(false)" aria-label="Close"
+              class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400">
+        <i class="hgi-stroke hgi-cancel-01" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="px-6 py-5 grid grid-cols-2 gap-3">
+      <button type="button" (click)="openOrder()"
+              class="col-span-2 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold flex items-center justify-center gap-2">
+        <i class="hgi-stroke hgi-add-01 text-lg" aria-hidden="true"></i> {{ hasBill() ? 'Open Order' : 'New Order' }}
+      </button>
+      <button type="button" (click)="openTransfer()" [disabled]="!hasBill() || !free().length" class="tbl-action">
+        <i class="hgi-stroke hgi-arrow-right-double" aria-hidden="true"></i> Transfer
+      </button>
+      <button type="button" (click)="openMerge(t)" [disabled]="!hasBill() || !!t.mergedInto" class="tbl-action">
+        <i class="hgi-stroke hgi-arrow-merge" aria-hidden="true"></i> Merge
+      </button>
+      <button type="button" (click)="openSplit()" [disabled]="!hasBill()" class="tbl-action">
+        <i class="hgi-stroke hgi-arrow-move-down-right" aria-hidden="true"></i> Split Bill
+      </button>
+      <button type="button" (click)="markFree()" [disabled]="t.status === 'available'" class="tbl-action">
+        <i class="hgi-stroke hgi-checkmark-circle-02" aria-hidden="true"></i> Mark Free
+      </button>
+    </div>
+  }
+</app-modal>
+
+<!-- ===================== TRANSFER ===================== -->
+<app-modal [(open)]="transferOpen" title="Transfer Table" [subtitle]="'From ' + (billHolder()?.name ?? '')">
+  <div class="px-6 py-5 space-y-4">
+    <p class="text-sm text-gray-500">Move the current order to a free table.</p>
+    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Select destination</p>
+    <div class="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto">
+      @for (f of free(); track f.id) {
+        <button type="button" (click)="transferTo.set(f.id)" [class.tbl-sel]="transferTo() === f.id"
+                [attr.aria-pressed]="transferTo() === f.id"
+                class="rounded-xl border border-gray-200 p-3 text-left hover:border-[#00c066] transition-colors">
+          <p class="font-semibold text-gray-900">{{ f.name }}</p>
+          <p class="text-[11px] text-gray-400">{{ f.seats }} seats</p>
+        </button>
+      } @empty {
+        <p class="col-span-3 text-sm text-gray-400 text-center py-6">No free tables right now.</p>
+      }
+    </div>
+  </div>
+  <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="transferOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+    <button type="button" (click)="transfer()" [disabled]="transferTo() === null"
+            class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Transfer</button>
+  </div>
+</app-modal>
+
+<!-- ===================== MERGE ===================== -->
+<app-modal [(open)]="mergeOpen" title="Merge Tables">
+  <div class="px-6 py-5 space-y-4">
+    <p class="text-sm text-gray-500">Combine multiple tables into one bill for a single party. The first table you pick keeps the bill.</p>
+    <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Select tables to merge</p>
+    <div class="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto">
+      @for (b of billable(); track b.id) {
+        @let pos = mergeIds().indexOf(b.id);
+        <button type="button" (click)="toggleMerge(b.id)" [class.tbl-sel]="pos > -1" [attr.aria-pressed]="pos > -1"
+                class="relative rounded-xl border border-gray-200 p-3 text-left hover:border-[#00c066] transition-colors">
+          @if (pos === 0) {
+            <span class="absolute top-1.5 right-1.5 text-[9px] font-semibold uppercase text-[#00994f]">Host</span>
+          }
+          <p class="font-semibold text-gray-900">{{ b.name }}</p>
+          <p class="text-[11px] text-gray-400">{{ style[b.status].label }} · {{ b.bill ?? 0 | baht }}</p>
+        </button>
+      } @empty {
+        <p class="col-span-3 text-sm text-gray-400 text-center py-6">No tables with open bills.</p>
+      }
+    </div>
+    @if (mergeIds().length > 1) {
+      <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 text-sm">
+        <span class="text-gray-500">{{ mergeIds().length }} tables · combined bill</span>
+        <span class="font-semibold text-gray-900">{{ mergeTotal() | baht }}</span>
+      </div>
+    }
+  </div>
+  <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="mergeOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+    <button type="button" (click)="merge()" [disabled]="mergeIds().length < 2"
+            class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Merge Selected</button>
+  </div>
+</app-modal>
+
+<!-- ===================== SPLIT BILL ===================== -->
+<app-modal [(open)]="splitOpen" [title]="'Split Bill — ' + (billHolder()?.name ?? '')">
+  <div class="px-6 py-5 space-y-4">
+    <div class="flex gap-2">
+      <button type="button" (click)="splitMode.set('even')" class="flex-1 h-9 rounded-lg text-sm font-medium"
+              [class]="splitMode() === 'even' ? 'bg-[#00c066] text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'">Split evenly</button>
+      <button type="button" (click)="splitMode.set('item')" class="flex-1 h-9 rounded-lg text-sm font-medium"
+              [class]="splitMode() === 'item' ? 'bg-[#00c066] text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'">By item</button>
+    </div>
+    <div>
+      <label for="splitGuests" class="block text-sm font-medium text-gray-700 mb-2">Number of guests</label>
+      <input id="splitGuests" type="number" min="1" [value]="guests()" (input)="guests.set($any($event.target).valueAsNumber || null)"
+             class="w-full h-10 px-4 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+    </div>
+    <div class="bg-gray-50 rounded-xl divide-y divide-gray-100">
+      <div class="flex items-center justify-between px-4 py-3 text-sm"><span class="text-gray-500">Total bill</span><span class="font-semibold text-gray-900">{{ billHolder()?.bill ?? 0 | baht }}</span></div>
+      <div class="flex items-center justify-between px-4 py-3 text-sm"><span class="text-gray-500">Per guest</span><span class="font-semibold text-[#00994f]">{{ perGuest() | baht: 2 }}</span></div>
+    </div>
+  </div>
+  <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+    <button type="button" (click)="splitOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+    <button type="button" (click)="printSplit()" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold">Print Split Bills</button>
+  </div>
+</app-modal>
+
+<!-- ===================== ADD TABLE ===================== -->
+<app-modal [(open)]="addOpen" title="Add Table" size="sm">
+  <form [formGroup]="addForm" (ngSubmit)="addTable()" novalidate>
+    @let f = addForm.controls;
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label for="tblName" class="block text-sm font-medium text-gray-700 mb-2">Table name / number</label>
+        <input id="tblName" type="text" formControlName="name" placeholder="e.g. T16" maxlength="12"
+               [attr.aria-invalid]="invalid(f.name)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm"
+               [class]="invalid(f.name) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.name)) {
+          <p class="text-xs text-red-600 mt-1.5">
+            @if (f.name.hasError('duplicate')) { A table with this name already exists. } @else { Enter a table name. }
+          </p>
+        }
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="tblSeats" class="block text-sm font-medium text-gray-700 mb-2">Seats</label>
+          <input id="tblSeats" type="number" min="1" max="30" formControlName="seats"
+                 [attr.aria-invalid]="invalid(f.seats)"
+                 class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm"
+                 [class]="invalid(f.seats) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+          @if (invalid(f.seats)) { <p class="text-xs text-red-600 mt-1.5">1 to 30 seats.</p> }
+        </div>
+        <div>
+          <label for="tblSection" class="block text-sm font-medium text-gray-700 mb-2">Section</label>
+          <select id="tblSection" formControlName="section"
+                  class="w-full h-10 px-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm">
+            @for (s of sections; track s.value) { <option [ngValue]="s.value">{{ s.label }}</option> }
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+      <button type="button" (click)="addOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+      <button type="submit" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold">Add Table</button>
+    </div>
+  </form>
+</app-modal>

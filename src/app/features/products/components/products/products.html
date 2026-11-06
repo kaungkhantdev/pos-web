@@ -1,0 +1,310 @@
+<div class="p-6 max-w-[1600px] mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 page-head">
+    <div>
+      <h1 class="text-2xl sm:text-[28px] leading-tight font-semibold tracking-tight text-gray-900">Menu Items</h1>
+      <p class="text-[15px] text-gray-500 mt-1">Manage your menu items, pricing and availability.</p>
+    </div>
+    <button type="button" (click)="openCreate()"
+            class="inline-flex items-center gap-2 bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold px-4 h-10 rounded-xl transition-colors">
+      <i class="hgi-stroke hgi-add-01 text-lg" aria-hidden="true"></i> Add Menu Item
+    </button>
+    <app-header-tools />
+  </div>
+
+  <!-- Table card -->
+  <div class="bg-white rounded-2xl overflow-hidden">
+
+    <!-- Toolbar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+      <div class="relative w-full max-w-xs">
+        <i class="hgi-stroke hgi-search-01 absolute inset-y-0 left-4 flex items-center leading-none text-gray-400" aria-hidden="true"></i>
+        <input type="search" placeholder="Search menu items" aria-label="Search by name, code or barcode"
+               [value]="search()" (input)="onSearch($any($event.target).value)"
+               class="w-full h-10 pl-10 pr-4 rounded-xl bg-white border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm" />
+      </div>
+      <div class="flex items-center gap-2">
+        <select aria-label="Category" (change)="onCategory($any($event.target).value)"
+                class="h-9 px-3 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:border-[#00c066] focus:bg-white text-sm text-gray-600">
+          <option value="" [selected]="categoryFilter() === null">All Categories</option>
+          @for (c of categories; track c.id) {
+            <option [value]="c.id" [selected]="categoryFilter() === c.id">{{ c.name }}</option>
+          }
+        </select>
+
+        <div class="relative shrink-0">
+          <button type="button" aria-label="Filter by status" [attr.aria-expanded]="filterOpen()"
+                  (click)="filterOpen.set(!filterOpen())"
+                  class="w-10 h-10 rounded-xl border flex items-center justify-center hover:bg-gray-50"
+                  [class]="status() === 'all' ? 'border-gray-200 bg-white text-gray-400' : 'border-[#00c066] bg-[#00c066]/10 text-[#00994f]'">
+            <i class="hgi-stroke hgi-filter-horizontal text-lg" aria-hidden="true"></i>
+          </button>
+          @if (filterOpen()) {
+            <div class="fixed inset-0 z-10" (click)="filterOpen.set(false)"></div>
+            <div class="absolute right-0 mt-2 w-52 bg-white rounded-xl border border-gray-100 shadow-lg p-1 z-20" role="menu">
+              @for (o of statusOptions; track o.value) {
+                <button type="button" role="menuitemradio" [attr.aria-checked]="status() === o.value"
+                        class="w-full flex items-center justify-between px-3 h-9 rounded-lg text-sm hover:bg-gray-50"
+                        [class]="status() === o.value ? 'text-[#00994f] font-semibold' : 'text-gray-600'"
+                        (click)="setStatus(o.value)">
+                  {{ o.label }}
+                  @if (status() === o.value) { <i class="hgi-stroke hgi-tick-02" aria-hidden="true"></i> }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+        <tr class="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
+          <th class="text-left font-medium px-5 py-3">Item</th>
+          <th class="text-left font-medium px-5 py-3">Item Code</th>
+          <th class="text-left font-medium px-5 py-3">Category</th>
+          <th class="text-left font-medium px-5 py-3">Price</th>
+          <th class="text-left font-medium px-5 py-3">Stock</th>
+          <th class="text-left font-medium px-5 py-3">Status</th>
+          <th class="text-right font-medium px-5 py-3">Actions</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (p of rows(); track p.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-3">
+                  @if (p.image) {
+                    <img [src]="p.image" [alt]="p.name" class="w-10 h-10 rounded-full object-cover shrink-0" />
+                  } @else {
+                    <span class="w-10 h-10 rounded-full font-semibold text-sm flex items-center justify-center shrink-0 {{ tone(p) }}">{{ p.name.charAt(0) }}</span>
+                  }
+                  <div class="min-w-0">
+                    <p class="font-semibold text-gray-900">{{ p.name }}</p>
+                    @if (p.modifiers.length) {
+                      <p class="text-xs text-gray-400 truncate max-w-[220px]">{{ p.modifiers.length }} modifiers</p>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-4 text-gray-600 whitespace-nowrap">
+                {{ p.sku || '—' }}
+                @if (p.barcode) { <br /><span class="text-xs text-gray-400">{{ p.barcode }}</span> }
+              </td>
+              <td class="px-5 py-4 text-gray-600">{{ categoryName().get(p.categoryId) ?? '—' }}</td>
+              <td class="px-5 py-4 text-gray-900 font-medium">{{ p.price | baht }}</td>
+              <td class="px-5 py-4">
+                <span class="text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap {{ stockBadge[stockLevel(p.stock)] }}">{{ stockText(p) }}</span>
+              </td>
+              <td class="px-5 py-4">
+                <button type="button" (click)="toggleAvailable(p)" [attr.aria-pressed]="p.available"
+                        [title]="p.available ? 'Click to mark unavailable' : 'Click to make available'"
+                        class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-colors"
+                        [class]="p.available ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'">
+                  <span class="w-1.5 h-1.5 rounded-full" [class]="p.available ? 'bg-green-500' : 'bg-gray-400'"></span>
+                  {{ p.available ? 'Available' : 'Unavailable' }}
+                </button>
+              </td>
+              <td class="px-5 py-4">
+                <div class="flex items-center justify-end gap-1">
+                  <button type="button" (click)="openEdit(p)" [attr.aria-label]="'Edit ' + p.name"
+                          class="w-8 h-8 rounded-lg text-gray-400 hover:text-[#00994f] hover:bg-[#00c066]/10 flex items-center justify-center">
+                    <i class="hgi-stroke hgi-pencil-edit-02 text-base" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" (click)="remove(p)" [attr.aria-label]="'Delete ' + p.name"
+                          class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center">
+                    <i class="hgi-stroke hgi-delete-02 text-base" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="px-5 py-12 text-center text-gray-400">
+                <i class="hgi-stroke hgi-restaurant-01 text-2xl block mb-2" aria-hidden="true"></i>
+                @if (search() || categoryFilter() !== null || status() !== 'all') { No menu items match your filters. }
+                @else { No menu items yet. Add your first one. }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex items-center justify-between px-5 py-3 text-sm text-gray-500">
+      <span>Showing {{ rows().length }} of {{ filtered().length }} items</span>
+      <div class="flex items-center gap-1">
+        <button type="button" aria-label="Previous page" [disabled]="page() <= 1" (click)="goTo(page() - 1)"
+                class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-40">
+          <i class="hgi-stroke hgi-arrow-left-01" aria-hidden="true"></i>
+        </button>
+        @for (n of pages(); track n) {
+          <button type="button" (click)="goTo(n)" [attr.aria-current]="n === page() ? 'page' : null"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold"
+                  [class]="n === page() ? 'bg-[#00c066] text-white' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'">{{ n }}</button>
+        }
+        <button type="button" aria-label="Next page" [disabled]="page() >= pageCount()" (click)="goTo(page() + 1)"
+                class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-40">
+          <i class="hgi-stroke hgi-arrow-right-01" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CREATE / EDIT ===================== -->
+<app-modal [(open)]="formOpen" size="lg"
+           [title]="editing() ? 'Edit Menu Item' : 'Add Menu Item'"
+           [icon]="editing() ? 'hgi-pencil-edit-02' : 'hgi-add-01'">
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    @let f = form.controls;
+    <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+      <!-- Photo -->
+      <div class="sm:col-span-2">
+        <span class="block text-sm font-medium text-gray-700 mb-2">Item Photo</span>
+        <div class="flex items-center gap-4 p-3 rounded-xl border border-dashed border-gray-300 hover:border-[#00c066] transition-colors">
+          <label class="flex items-center gap-4 flex-1 cursor-pointer">
+            @if (imagePreview(); as src) {
+              <img [src]="src" alt="Item photo preview" class="w-16 h-16 rounded-xl object-cover shrink-0" />
+            } @else {
+              <span class="w-16 h-16 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
+                <i class="hgi-stroke hgi-image-add-02 text-2xl" aria-hidden="true"></i>
+              </span>
+            }
+            <div>
+              <p class="text-sm font-medium text-gray-700">{{ imagePreview() ? 'Change photo' : 'Upload item photo' }}</p>
+              <p class="text-xs text-gray-400">PNG or JPG, up to 2&nbsp;MB</p>
+            </div>
+            <input type="file" accept="image/png,image/jpeg" class="sr-only" (change)="onImage($event)" />
+          </label>
+          @if (imagePreview()) {
+            <button type="button" (click)="removeImage()" aria-label="Remove photo"
+                    class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center shrink-0">
+              <i class="hgi-stroke hgi-delete-02" aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Name -->
+      <div class="sm:col-span-2">
+        <label for="pName" class="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+        <input id="pName" type="text" formControlName="name" placeholder="e.g. Chicken Rice Set" maxlength="80"
+               [attr.aria-invalid]="invalid(f.name)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid(f.name) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.name)) { <p class="text-xs text-red-600 mt-1.5">Enter the item name.</p> }
+      </div>
+
+      <!-- Code -->
+      <div>
+        <label for="pSku" class="block text-sm font-medium text-gray-700 mb-2">Item Code</label>
+        <input id="pSku" type="text" formControlName="sku" placeholder="SKU-0000"
+               [attr.aria-invalid]="invalid(f.sku)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm uppercase transition-colors"
+               [class]="invalid(f.sku) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.sku)) {
+          <p class="text-xs text-red-600 mt-1.5">
+            @if (f.sku.hasError('duplicate')) { Another item already uses this code. } @else { 3–20 letters, numbers or dashes. }
+          </p>
+        }
+      </div>
+
+      <!-- Barcode -->
+      <div>
+        <label for="pBarcode" class="block text-sm font-medium text-gray-700 mb-2">Barcode <span class="text-gray-400 font-normal">(optional)</span></label>
+        <input id="pBarcode" type="text" inputmode="numeric" formControlName="barcode" placeholder="885…"
+               [attr.aria-invalid]="invalid(f.barcode)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid(f.barcode) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.barcode)) {
+          <p class="text-xs text-red-600 mt-1.5">
+            @if (f.barcode.hasError('duplicate')) { Another item already uses this barcode. } @else { 8–14 digits. }
+          </p>
+        }
+      </div>
+
+      <!-- Category -->
+      <div>
+        <label for="pCategory" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+        <select id="pCategory" formControlName="categoryId"
+                class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+                [class]="invalid(f.categoryId) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'">
+          <option [ngValue]="null" disabled>Select a category</option>
+          @for (c of categories; track c.id) { <option [ngValue]="c.id">{{ c.name }}</option> }
+        </select>
+        @if (invalid(f.categoryId)) { <p class="text-xs text-red-600 mt-1.5">Choose a category.</p> }
+      </div>
+
+      <!-- Price -->
+      <div>
+        <label for="pPrice" class="block text-sm font-medium text-gray-700 mb-2">Price (฿)</label>
+        <input id="pPrice" type="number" min="0" step="0.01" formControlName="price" placeholder="0.00"
+               [attr.aria-invalid]="invalid(f.price)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid(f.price) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.price)) { <p class="text-xs text-red-600 mt-1.5">Enter a price of 0 or more.</p> }
+      </div>
+
+      <!-- Stock -->
+      <div>
+        <label for="pStock" class="block text-sm font-medium text-gray-700 mb-2">{{ editing() ? 'Stock' : 'Initial Stock' }}</label>
+        <input id="pStock" type="number" min="0" step="1" formControlName="stock" placeholder="0"
+               [attr.aria-invalid]="invalid(f.stock)"
+               class="w-full h-10 px-4 rounded-xl bg-gray-50 border focus:outline-none focus:bg-white text-sm transition-colors"
+               [class]="invalid(f.stock) ? 'border-red-500' : 'border-gray-200 focus:border-[#00c066]'" />
+        @if (invalid(f.stock)) { <p class="text-xs text-red-600 mt-1.5">Use a whole number, 0 or more.</p> }
+      </div>
+
+      <!-- Available -->
+      <div class="sm:col-span-2 flex items-center justify-between rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
+        <div>
+          <p class="text-sm font-medium text-gray-800">Available</p>
+          <p class="text-xs text-gray-400">Show this item on the POS menu</p>
+        </div>
+        <label class="switch"><input type="checkbox" formControlName="available" aria-label="Available" /><span class="slider"></span></label>
+      </div>
+
+      <!-- Modifiers -->
+      <div class="sm:col-span-2">
+        <span class="block text-sm font-medium text-gray-700 mb-2">Modifiers</span>
+        <div class="flex flex-wrap items-center gap-2">
+          @for (m of modifiers(); track m) {
+            <span class="inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-[#00c066]/10 text-[#00994f] text-sm font-medium">
+              {{ m }}
+              <button type="button" (click)="removeModifier(m)" [attr.aria-label]="'Remove ' + m" class="text-[#00994f]/60 hover:text-[#00994f]">
+                <i class="hgi-stroke hgi-cancel-01 text-xs" aria-hidden="true"></i>
+              </button>
+            </span>
+          }
+          @if (addingMod()) {
+            <input #modInput type="text" maxlength="30" placeholder="e.g. No onions" aria-label="New modifier"
+                   [value]="modDraft()" (input)="modDraft.set($any($event.target).value)"
+                   (keydown.enter)="$event.preventDefault(); addModifier()"
+                   (keydown.escape)="$event.stopPropagation(); addingMod.set(false)"
+                   (blur)="modDraft().trim() ? addModifier() : addingMod.set(false)"
+                   class="h-8 w-40 px-3 rounded-lg border border-[#00c066] focus:outline-none text-sm" />
+          } @else {
+            <button type="button" (click)="startAddMod()"
+                    class="inline-flex items-center gap-1 px-3 h-8 rounded-lg border border-dashed border-gray-300 text-gray-500 text-sm hover:border-[#00c066] hover:text-[#00994f]">
+              <i class="hgi-stroke hgi-add-01 text-xs" aria-hidden="true"></i> Add modifier
+            </button>
+          }
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Cashiers pick these on the POS. Press Enter to add.</p>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 p-5 border-t border-gray-100">
+      <button type="button" (click)="formOpen.set(false)" class="px-4 h-10 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50">Cancel</button>
+      <button type="submit" class="px-4 h-10 rounded-xl bg-[#00c066] hover:bg-[#00a857] text-white text-sm font-semibold transition-colors">
+        {{ editing() ? 'Save Changes' : 'Create Item' }}
+      </button>
+    </div>
+  </form>
+</app-modal>
