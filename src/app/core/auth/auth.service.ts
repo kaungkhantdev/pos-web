@@ -33,7 +33,7 @@ export class AuthService {
   private refreshing$: Observable<string> | null = null;
 
   readonly user = signal<Me | null>(null);
-  readonly isLoggedIn = computed(() => this.user != null);
+  readonly isLoggedIn = computed(() => this.user() != null);
 
   accessToken(): string | null {
     return this.token();
@@ -87,8 +87,7 @@ export class AuthService {
     return this.refreshing$;
   }
 
-  restore(): Promise<void>
-  {
+  restore(): Promise<void> {
     if (!this.storage.get()) return Promise.resolve();
     return firstValueFrom(
       this.refresh().pipe(

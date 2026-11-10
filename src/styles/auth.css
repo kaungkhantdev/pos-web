@@ -111,11 +111,11 @@
 .auth-alert {
   display: none;
   gap: 10px;
-  align-items: flex-start;
+  align-items: center;
   padding: 12px 14px;
   border-radius: 12px;
   background: #fef2f2;
-  border: 1px solid #fecaca;
+  /*border: 1px solid #fecaca;*/
   color: #b91c1c;
   font-size: 13px;
 }

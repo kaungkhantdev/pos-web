@@ -21,6 +21,7 @@ import { filter, map } from 'rxjs';
 import { Logo } from '../../../shared/components/logo/logo';
 import { ConfirmService } from '../../notify/confirm.service';
 import { BOTTOM_NAV, MAIN_NAV } from './nav';
+import { AuthService } from '../../auth/auth.service';
 
 const SIDEBAR_KEY = 'astronity.sidebar';
 
@@ -45,6 +46,7 @@ export class AppShell {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private confirm = inject(ConfirmService);
+  private auth = inject(AuthService);
 
   nav = MAIN_NAV;
   bottomNav = BOTTOM_NAV;
@@ -104,7 +106,7 @@ export class AppShell {
       confirmText: 'Log out',
     });
     if (!ok) return;
-    // TODO: AuthService.logout()
+    this.auth.logout();
     this.router.navigateByUrl('/auth/login');
   }
 

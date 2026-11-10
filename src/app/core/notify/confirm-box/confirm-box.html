@@ -1,1 +1,35 @@
-<p>confirm-box works!</p>
+@if (confirm.current(); as c) {
+  <div class="cf-overlay">
+    <div class="cf-backdrop" (click)="confirm.done(false)"></div>
+
+    <div
+      #box
+      class="cf-box"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="cfTitle"
+      [attr.aria-describedby]="c.message ? 'cfMsg' : null"
+    >
+      <div class="cf-head cf-{{ c.tone }}">
+        <i class="hgi-stroke {{ c.icon || tones[c.tone].icon }}" aria-hidden="true"></i>
+        <h3 id="cfTitle" class="cf-title">{{ c.title || 'Are you sure?' }}</h3>
+      </div>
+
+      @if (c.message) {
+        <p id="cfMsg" class="cf-msg">{{ c.message }}</p>
+      }
+
+      <div class="cf-actions">
+        <button type="button" class="cf-btn cf-btn-soft" (click)="confirm.done(false)">
+          {{ c.cancelText || 'Dismiss' }}
+        </button>
+        <button #ok type="button" class="cf-btn {{ tones[c.tone].btn }}" (click)="confirm.done(true)">
+          @if (c.confirmIcon) {
+            <i class="hgi-stroke {{ c.confirmIcon }}" aria-hidden="true"></i>
+          }
+          {{ c.confirmText || 'Confirm' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

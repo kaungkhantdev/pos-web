@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { guestGuard } from './features/auth/guest-guard';
+import { guestGuard } from './core/auth/guest.guard';
 import { AuthLayout } from './core/layout/auth-layout/auth-layout';
 import { AppShell } from './core/layout/app-shell/app-shell';
+import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -14,6 +15,8 @@ export const routes: Routes = [
   {
     path: '',
     component: AppShell,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       {
         path: 'dashboard',

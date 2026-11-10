@@ -15,17 +15,17 @@ export class AuthLayout {
   features = [
     {
       icon: 'hgi-restaurant-01',
-      title: 'Easy Order Management',
-      text: 'Manage orders efficiently with intuitive interface',
+      title: 'Easy order management',
+      text: 'Manage orders efficiently with an intuitive interface',
     },
     {
       icon: 'hgi-analytics-01',
-      title: 'Real-time Analytics',
-      text: 'Track sales and performance in real-time',
+      title: 'Real-time analytics',
+      text: 'Track sales and performance as they happen',
     },
     {
       icon: 'hgi-security-check',
-      title: 'Secure & Reliable',
+      title: 'Secure & reliable',
       text: 'Enterprise-grade security for your business',
     },
   ];
