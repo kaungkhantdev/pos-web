@@ -1,4 +1,12 @@
-import { Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NgTemplateOutlet } from '@angular/common';
 import {
@@ -13,6 +21,16 @@ import { filter, map } from 'rxjs';
 import { Logo } from '../../../shared/components/logo/logo';
 import { ConfirmService } from '../../notify/confirm.service';
 import { BOTTOM_NAV, MAIN_NAV } from './nav';
+
+const SIDEBAR_KEY = 'astronity.sidebar';
+
+function readExpanded(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) === 'expanded';
+  } catch {
+    return false;
+  }
+}
 
 @Component({
   selector: 'app-shell',
@@ -31,6 +49,10 @@ export class AppShell {
   nav = MAIN_NAV;
   bottomNav = BOTTOM_NAV;
   menuOpen = signal(false);
+
+  /** Desktop: sidebar shows names. Remembered between visits. */
+  expanded = signal(readExpanded());
+  toggleLabel = computed(() => (this.expanded() ? 'Collapse menu' : 'Expand menu'));
 
   private rail = viewChild.required<ElementRef<HTMLElement>>('rail');
   private toggleBtn = viewChild.required<ElementRef<HTMLButtonElement>>('toggle');
@@ -55,7 +77,17 @@ export class AppShell {
 
   setMenu(open: boolean) {
     this.menuOpen.set(open);
-    if (open) this.rail().nativeElement.querySelector<HTMLElement>('.sb-item')?.focus();
+    if (open) this.rail().nativeElement.querySelector<HTMLElement>('nav .sb-item')?.focus();
+  }
+
+  toggleExpanded() {
+    const on = !this.expanded();
+    this.expanded.set(on);
+    try {
+      localStorage.setItem(SIDEBAR_KEY, on ? 'expanded' : 'collapsed');
+    } catch {
+      // storage blocked (private mode): the choice just isn't remembered
+    }
   }
 
   onEscape() {

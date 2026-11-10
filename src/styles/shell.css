@@ -1,4 +1,4 @@
-/* App shell: full-height icon sidebar + page header tools */
+/* App shell: full-height dark icon sidebar + page header tools (was sidebar.css) */
 
 .app-shell {
   height: 100vh;
@@ -16,18 +16,28 @@
   overflow: hidden;
 }
 
-/* ---------- Sidebar ---------- */
+/* ---------- Sidebar (dark rail) ---------- */
+
+/* Every row is laid out the same way open or closed: the icon stays at a
+   fixed spot 34px from the left edge and the name sits after it. Closing the
+   sidebar only shrinks its width (the names get clipped and fade), so
+   nothing jumps sideways while it animates. */
 
 .app-rail {
+  --rail-bg: #0e0f12;
+  --rail-icon: #9ca3af;
+  --rail-hover: #1c1d21;
+  --rail-active: #26272c;
   width: 68px;
   flex-shrink: 0;
-  /* logo top, nav centred vertically, settings / logout at the bottom */
+  /* avatar, expand toggle, nav from the top, settings / logout, logo at the very bottom */
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  justify-items: center;
+  grid-template-rows: auto auto 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr); /* don't grow to fit the hidden names */
   gap: 4px;
-  padding: 14px 0;
-  background: #fff;
+  padding: 14px 15px;
+  background: var(--rail-bg);
+  overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -36,18 +46,68 @@
   display: none;
 }
 
+.rail-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.rail-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rail-user-name {
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.rail-user-name small {
+  color: var(--rail-icon);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.rail-toggle {
+  margin-bottom: 8px;
+}
+
+.rail-toggle i {
+  transition: transform 0.25s;
+}
+
 .rail-logo {
   display: flex;
-  margin-bottom: 0;
-  border-radius: 9999px;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  width: 38px;
+  height: 38px;
+  margin-top: 10px;
+  border-radius: 10px;
 }
 
 .rail-group {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  align-self: center;
+  gap: 6px;
+  align-self: start;
 }
 
 .rail-bottom {
@@ -57,35 +117,80 @@
 
 .sb-item {
   position: relative;
-  width: 38px;
+  width: 100%;
   height: 38px;
   flex-shrink: 0;
-  border-radius: 9999px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  transition: background-color 0.15s, color 0.15s;
+  gap: 12px;
+  padding: 0 10px;
+  overflow: hidden;
+  color: var(--rail-icon);
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .sb-item:hover {
-  background: var(--app-soft);
-  color: #111827;
+  background: var(--rail-hover);
+  color: #fff;
 }
 
+/* Active: green icon on a lifted dark tile. */
 .sb-item.active {
-  background: var(--green-ui);
-  color: #fff;
+  background: var(--rail-active);
+  color: var(--green-ui);
 }
 
 .sb-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .sb-label {
-  display: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sb-item.active .sb-label {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---------- Desktop: expanded sidebar with names ---------- */
+
+@media (min-width: 768px) {
+  .app-rail {
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .app-rail.no-anim,
+  .app-rail.no-anim * {
+    transition: none !important;
+  }
+  /* names fade out quickly when closing, fade in once there's room when opening */
+  .sb-label,
+  .rail-user-name {
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  .app-rail.expanded {
+    width: 232px;
+  }
+  .app-rail.expanded .sb-label,
+  .app-rail.expanded .rail-user-name {
+    opacity: 1;
+    transition: opacity 0.2s 0.08s;
+  }
+  .app-rail.expanded .sb-item::after {
+    display: none;
+  }
+  .app-rail.expanded .rail-toggle i {
+    transform: rotate(180deg);
+  }
 }
 
 /* Tooltip: fixed so the scrolling sidebar doesn't clip it; it keeps its
@@ -104,7 +209,9 @@
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s, transform 0.15s;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
   z-index: 80;
 }
 
@@ -148,6 +255,7 @@
 
 .sb-item:focus-visible,
 .hd-icon-btn:focus-visible,
+.rail-toggle:focus-visible,
 .rail-logo:focus-visible {
   outline: 2px solid var(--green-ui);
   outline-offset: 2px;
@@ -169,10 +277,36 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 12px 16px;
-    background: #fff;
-    border-bottom: 1px solid #eceeed;
+    padding: 10px 16px;
+    background: #0e0f12;
     flex-shrink: 0;
+  }
+  .mb-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1c1d21;
+    color: #fff;
+    transition: background-color 0.15s;
+  }
+  .mb-btn:hover {
+    background: #26272c;
+  }
+  .mb-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .mb-btn:focus-visible,
+  .mb-brand:focus-visible {
+    outline: 2px solid var(--green-ui);
+    outline-offset: 2px;
   }
   .header-tools {
     display: none;
@@ -194,9 +328,15 @@
   .app-rail.open {
     transform: translateX(0);
   }
+  .rail-user {
+    padding: 0 4px;
+    margin-bottom: 16px;
+  }
+  .rail-toggle {
+    display: none;
+  }
   .rail-logo {
-    padding-left: 4px;
-    margin-bottom: 12px;
+    margin: 12px 0 0 4px;
   }
   .rail-bottom {
     margin-top: auto;
@@ -210,16 +350,11 @@
     width: 100%;
     justify-content: flex-start;
     gap: 12px;
-    padding: 0 16px;
-    border-radius: 9999px;
+    padding: 0 12px;
+    border-radius: 10px;
   }
   .sb-item::after {
     display: none;
-  }
-  .sb-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
   }
   #sbBackdrop.show {
     display: block;

@@ -1,25 +1,31 @@
 <!-- Phones only -->
 <header class="app-mobilebar">
-  <button #toggle type="button" class="hd-icon-btn" aria-label="Open menu"
+  <button #toggle type="button" class="mb-btn" aria-label="Open menu"
           aria-controls="sidebar" [attr.aria-expanded]="menuOpen()" (click)="setMenu(!menuOpen())">
     <i class="hgi-stroke hgi-menu-01 text-xl leading-none"></i>
   </button>
-  <a routerLink="/dashboard" class="flex items-center gap-2" aria-label="Astronity home">
-    <span class="w-8 h-8 rounded-full border-[1.5px] border-gray-200 bg-white flex items-center justify-center shrink-0">
-      <app-logo [width]="18" />
-    </span>
-    <span class="text-base font-semibold text-gray-900">Astronity</span>
+  <a routerLink="/dashboard" class="mb-brand" aria-label="Astronity home">
+    <app-logo [width]="26" />
+    <span>Astronity</span>
   </a>
-  <span class="w-9 h-9 rounded-full bg-[#00c066] text-white flex items-center justify-center text-sm font-semibold">SK</span>
+  <span class="rail-avatar" title="Somchai K. · Manager" aria-label="Signed in as Somchai K." role="img">SK</span>
 </header>
 
 <div class="app-body">
-  <aside #rail id="sidebar" class="app-rail" [class.open]="menuOpen()" aria-label="Main">
-    <a routerLink="/dashboard" class="rail-logo" aria-label="Astronity home">
-      <span class="w-10 h-10 rounded-full border-[1.5px] border-gray-200 bg-white flex items-center justify-center shrink-0">
-        <app-logo [width]="22" />
-      </span>
-    </a>
+  <aside #rail id="sidebar" class="app-rail" [class.open]="menuOpen()" [class.expanded]="expanded()"
+         aria-label="Main">
+    <div class="rail-user" title="Somchai K. · Manager">
+      <span class="rail-avatar" aria-hidden="true">SK</span>
+      <span class="rail-user-name">Somchai K.<small>Manager</small></span>
+    </div>
+
+    <!-- Desktop only: show / hide the names -->
+    <button type="button" class="sb-item rail-toggle" aria-controls="sidebar"
+            [attr.aria-expanded]="expanded()" [attr.aria-label]="toggleLabel()"
+            [attr.data-tip]="toggleLabel()" (click)="toggleExpanded()">
+      <span class="sb-icon"><i class="hgi-stroke hgi-arrow-right-double text-[18px] leading-none"></i></span>
+      <span class="sb-label">{{ toggleLabel() }}</span>
+    </button>
 
     <nav class="rail-group">
       @for (item of nav; track item.link) {
@@ -36,6 +42,10 @@
         <span class="sb-label">Logout</span>
       </button>
     </div>
+
+    <a routerLink="/dashboard" class="rail-logo" aria-label="Astronity home">
+      <app-logo [width]="26" />
+    </a>
   </aside>
 
   <main [class]="fullHeight()

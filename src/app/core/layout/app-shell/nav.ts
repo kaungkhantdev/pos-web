@@ -6,7 +6,7 @@ export interface NavItem {
 }
 
 export const MAIN_NAV: NavItem[] = [
-  { label: 'Dashboard', link: '/dashboard', icon: 'hgi-dashboard-square-02' },
+  { label: 'Dashboard', link: '/dashboard', icon: 'hgi-home-01' },
   { label: 'POS', link: '/pos', icon: 'hgi-shopping-cart-01' },
   {
     label: 'Tables',
